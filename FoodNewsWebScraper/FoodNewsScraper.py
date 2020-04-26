@@ -1,13 +1,19 @@
-import os, bs4, requests, re, datetime, openpyxl, pandas as pd
+import os
+import bs4
+import requests
+import re
+import datetime
+import openpyxl
+import pandas as pd
 from collections import ChainMap
 from urlextract import URLExtract
 from IPython.display import display_html
 
-d = []  # list of dictionaries
+d = []
 
-os.chdir("Path")  # path for .csv
+# os.chdir("Path")  # path for .csv
 
-# takes the string text and returns the category (works, but not full completed. Will have to return to this at the end to ensure that the category finder is correct)
+
 def category(string):
     cat = ["Recall", "Alert", "Discussion", "News"]
     for i in range(len(cat)):
@@ -16,7 +22,6 @@ def category(string):
     return "News"  # if no match then use News
 
 
-# method that takes the url and css path and returns the string of that site
 def website_text(url, element):
     headers = {"User-Agent": "Mozilla/5.0"}
     res = requests.get(url, headers=headers)
