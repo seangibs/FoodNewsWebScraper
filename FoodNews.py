@@ -217,7 +217,7 @@ dictionary('http://brc.org.uk/news' #url
     ,'BRC' #type
     )
 
-# GFSI
+# GFSI test
 dictionary('https://mygfsi.com/news-and-resources/?type=news_updates' #url
     ,'#response' #element
     ,r'url\(\'(.*?)\'\);' #urlfinder
