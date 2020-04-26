@@ -5,7 +5,7 @@ from IPython.display import display_html
 
 d = [] #list of dictionaries
 
-os.chdir('Path') #path for csv
+os.chdir('Path') #path for csv file
 
 #takes the string text and returns the category (works, but not full completed. Will have to return to this at the end to ensure that the category finder is correct)
 def category(string):
