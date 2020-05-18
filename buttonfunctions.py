@@ -25,7 +25,7 @@ class ButtonFunc(object):
                 ,date_div = "h5"
                 ,url = ["https://www.ifs-certification.com/index.php/en/news"]
                 ,site_type = "IFS"
-                ,date_formatter = '%d %B %Y'
+                ,date_formatter = "%d %B %Y"
                 ))
 
         if fda_var.get() == True:
@@ -37,7 +37,7 @@ class ButtonFunc(object):
                 ,date_int = 1
                 ,url = ["https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-rules-guidance-industry"]
                 ,site_type = "FDA FSMA"
-                ,date_formatter = '%Y/%m'
+                ,date_formatter = "%Y/%m"
                 ))
 
         if fsai_var.get() == True:
@@ -95,7 +95,7 @@ class ButtonFunc(object):
                 ,date_div = "time"
                 ,url = ["https://www.fssc22000.com/news/"]
                 ,site_type = "FSSC 22000"
-                ,date_formatter = "%Y-%m-%d"
+                ,date_formatter = "%d %B %Y"
                 ))
 
         if sf360_var.get() == True:
@@ -119,12 +119,11 @@ class ButtonFunc(object):
                 class_page = "^views-row views-row-"
                 ,desc_div = "span"
                 ,desc_class = "field-content"
-                ,date_div = "div"
-                ,date_class = "field-content"
-                ,date_int = 1
+                ,date_div = "span"
+                ,date_class = "date-display-single"
                 ,url = ["http://www.efsa.europa.eu/en/news"]
                 ,site_type = "EFSA"
-                ,date_formatter = "%d/%m/%Y"
+                ,date_formatter = "%d %B %Y"
                 ))
 
         if un_fao_var.get() == True:
@@ -136,7 +135,7 @@ class ButtonFunc(object):
                 ,date_class = "list-date"
                 ,url = ["http://www.fao.org/news/archive/news-by-date/2020/en/"]
                 ,site_type = "FAO"
-                ,date_formatter = ""
+                ,date_formatter = "%d-%m-%Y"
                 ))
 
         if cfia_var.get() == True:
@@ -193,3 +192,10 @@ class ButtonFunc(object):
     def generate_csv(self):
         os.chdir(r"C:\Users\seang\Desktop\FoodNewsApp\TestDoc")
         self.df.to_csv("news.csv", sep=',', encoding='utf-8')
+
+    def reset(self,outp):
+        self.data_list = []
+        self.df = pd.DataFrame()
+        outp.delete('1.0', END)
+
+

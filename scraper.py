@@ -1,7 +1,7 @@
 import requests, re, feedparser
 from bs4 import BeautifulSoup
 import pandas as pd
-#import arrow
+from datetime import datetime
 
 
 class Scraper(object):
@@ -12,7 +12,7 @@ class Scraper(object):
         pd.options.display.max_columns = 20
 
 
-    def convert(self,page_div="div",class_page=None,desc_div=None,desc_class=None,link_div="a",link_class="href",date_div=None,date_class=None,url=None,loop_begin=0,desc_int=0,date_int=0,site_type = "NA",date_formatter=""):
+    def convert(self,page_div="div",class_page=None,desc_div=None,desc_class=None,link_div="a",link_class="href",date_div=None,date_class=None,url=None,loop_begin=0,desc_int=0,date_int=0,site_type = "NA",date_formatter="%Y %m %d"):
         """This is the main function for converting a site's data to a dataframe all other sites that cannot be called in this function have their own separate functino"""
 
         self.dict_list = []
@@ -54,12 +54,12 @@ class Scraper(object):
                 except:
                     self.date = '2069-04-20'
 
-                self.dicts = {"category": "test", "description": self.desc, "link": self.link, "date" : self.date.format('YYYY-MM-DD'), "site_type": site_type}
+                self.dicts = {"category": "test", "description": self.desc, "link": self.link, "date" : datetime.strptime(re.sub("Published Date ", "", self.date),date_formatter), "site_type": site_type}
 
                 self.dict_list.append(self.dicts)
 
         self.df = pd.DataFrame(self.dict_list)
-        self.df["date"] = pd.to_datetime(self.df["date"].dt.strftime(date_formatter), errors = 'coerce')
+        #self.df["date"] = pd.to_datetime(self.df["date"].dt.strftime(date_formatter), errors = 'coerce')
 
         return self.df
 
@@ -75,7 +75,7 @@ class Scraper(object):
 
         return(self.df)
 
-    def fda(self,date_formatter):
+    def fda(self):
         """FDA function for returning dataframe of FDA news"""
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0',
@@ -110,7 +110,7 @@ class Scraper(object):
         self.df.insert(4, "site_type", "IFSQN")
         return(self.df)
 
-    def fsanzdf(self,date_formatter):
+    def fsanzdf(self):
         """FSANZ function for returning dataframe of FSANZ news"""
         self.dl = []
         self.r = requests.get("https://www.foodstandards.gov.au/industry/foodrecalls/recalls/Pages/default.aspx")

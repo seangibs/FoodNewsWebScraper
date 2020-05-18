@@ -71,7 +71,7 @@ fsanz   = Checkbutton(window, text="FSANZ", var = fsanz_var).grid(row=0,column=3
 
 global sqf_var
 sqf_var = BooleanVar()
-sqf     = Checkbutton(window, text="SQF", var = sqf_var).grid(row=1,column=3,rowspan=1,sticky=W)
+sqf     = Checkbutton(window, text="SQF (NA)", var = sqf_var).grid(row=1,column=3,rowspan=1,sticky=W)
 
 global efsa_var
 efsa_var = BooleanVar()
@@ -157,5 +157,8 @@ view_all = Button(window,height = 1, width = 12, text = "View All"
 
 generate_csv = Button(window,height = 1, width = 12, text = "CSV Export"
     , command = bf.generate_csv).grid(row=10,column=4,rowspan=1,columnspan=1,sticky=W)
+
+reset = Button(window,height = 1, width = 12, text = "Reset"
+    , command = partial(bf.reset, outp)).grid(row=11,column=4,rowspan=1,columnspan=1,sticky=W)
 
 window.mainloop()
