@@ -10,7 +10,7 @@ class Scraper(object):
         pd.options.display.width = 100
         pd.options.display.max_colwidth = 20
         pd.options.display.max_columns = 20
-
+        self.min_date = datetime.strptime("2020-05-19","%Y-%m-%d")
 
     def convert(self,page_div="div",class_page=None,desc_div=None,desc_class=None,link_div="a",link_class="href",date_div=None,date_class=None,url=None,loop_begin=0,desc_int=0,date_int=0,site_type = "NA",date_formatter="%Y %m %d"):
         """This is the main function for converting a site's data to a dataframe all other sites that cannot be called in this function have their own separate functino"""
@@ -41,6 +41,9 @@ class Scraper(object):
                     self.desc = item.find_all(desc_div, class_ = desc_class)[desc_int].text.strip()
                 except:
                     continue
+
+                cat = self.category_finder(self.desc)
+
                 try:
                     if item.find(link_div)[link_class] == None:
                         self.link = item[link_class] #needed for some cases when there is not any anchors
@@ -51,27 +54,37 @@ class Scraper(object):
 
                 try:
                     self.date = item.find_all(date_div, class_ = date_class)[date_int].text.strip() #add if date < date then continue for loop to begining of for loop
-                except:
-                    self.date = '2069-04-20'
+                    if site_type == "IFS":
+                        self.date = datetime.strptime(re.sub("Published Date ", "", self.date),date_formatter)
 
-                self.dicts = {"category": "test", "description": self.desc, "link": self.link, "date" : datetime.strptime(re.sub("Published Date ", "", self.date),date_formatter), "site_type": site_type}
+                    else:
+                        self.date = datetime.strptime(self.date,date_formatter)
+                except:
+                    print("Could not find a date for %s, %s, %s, %s" %(self.link,self.desc, self.date, site_type))
+
+                if self.date < self.min_date:
+                    continue
+
+                self.dicts = {"category": cat, "description": self.desc, "link": self.url_corrector(u, self.link), "date" : self.date, "site_type": site_type}
 
                 self.dict_list.append(self.dicts)
 
         self.df = pd.DataFrame(self.dict_list)
-        #self.df["date"] = pd.to_datetime(self.df["date"].dt.strftime(date_formatter), errors = 'coerce')
 
-        return self.df
+        return(self.df)
 
 
     def ecrasff(self):
         """EC RASFF function for returning dataframe of EC RASFF news"""
         self.df = pd.read_html("https://webgate.ec.europa.eu/rasff-window/portal/index.cfm?event=notificationsList")[0]
 
-        self.df = self.df[["Subject","Reference","Date of case"]]
+        self.df["Date of case"] = pd.to_datetime(self.df["Date of case"])
+        self.df = self.df.loc[self.df["Date of case"] < self.min_date, ["Subject","Reference","Date of case"]]
         self.df.insert(0, "category", "Alert")
         self.df.insert(4, "site_type", "EC RASFF")
         self.df.rename(columns={"Subject": "description", "Reference": "link", "Date of case": "date" }, inplace=True)
+
+        self.df["link"] = self.df["link"].apply(lambda x: "{}{}".format("https://webgate.ec.europa.eu/rasff-window/portal/index.cfm?event=notificationDetail&NOTIF_REFERENCE=", x))
 
         return(self.df)
 
@@ -94,23 +107,26 @@ class Scraper(object):
         self.response = requests.get("https://www.fda.gov/files/api/datatables/static/recalls-market-withdrawals.json", headers=self.headers, params=self.params)
 
         self.df = pd.read_json(response.text)
-        self.df = self.df[["field_product_description","path","field_change_date_2"]].rename(columns={"field_product_description": "description", "path": "link", "field_change_date_2": "date" }, inplace=True)
+        self.df["date"] = pd.to_datetime(self.df["date"])
+        self.df = self.df.loc[self.df["Date of case"] < self.min_date, ["Subject","Reference","Date of case"]].rename(columns={"field_product_description": "description", "path": "link", "field_change_date_2": "date" }, inplace=True)
         self.df.insert(0, "category", "News")
         self.df.insert(4, "site_type", "FDA")
-
         return(self.df)
 
     def ifsqn(self,date_formatter):
         """IFSQN function for returning dataframe of IFSQN news"""
         self.parsed_rss = feedparser.parse('https://www.ifsqn.com/forum/index.php/rss/forums/4-food-safety-quality-discussion/')
 
+        self.df["date"] = pd.to_datetime(self.df["date"])
         self.df = self.pd.DataFrame(parsed_rss['entries'])
-        self.df = self.df[["title","link","published"]].rename(columns={"title": "description", "published": "date" }, inplace=True)
+        self.df = self.df.loc[self.df["Date of case"] < self.min_date, ["Subject","Reference","Date of case"]].rename(columns={"title": "description", "published": "date" }, inplace=True)
+        self.df.loc[self.df["date"] < self.min_date]
         self.df.insert(0, "category", "Discussion")
         self.df.insert(4, "site_type", "IFSQN")
+        self.df["date"] = pd.to_datetime(self.df["date"])
         return(self.df)
 
-    def fsanzdf(self):
+    def fsanzdf(self, date_formatter):
         """FSANZ function for returning dataframe of FSANZ news"""
         self.dl = []
         self.r = requests.get("https://www.foodstandards.gov.au/industry/foodrecalls/recalls/Pages/default.aspx")
@@ -118,14 +134,46 @@ class Scraper(object):
         for item in self.soup.find('div',class_='searchfilter-userfilterbox').find_next('div').find_all('a'):
             self.link = item['href']
             self.date  = item.find_previous('div').text
+            self.date = datetime.strptime(self.date,date_formatter)
+
+            if self.date < self.min_date:
+                continue
             self.desc = item.find_next('td').text + " :: " + item.find_next('td').find_next('td').text
 
-            self.dicts = {"category": "test", "description": self.desc, "link": self.link, "date" : self.date, "site_type": "FSANZ"}
+            cat = self.category_finder(self.desc)
+
+            self.dicts = {"category": cat, "description": self.desc, "link": self.link, "date" :  self.date, "site_type": "FSANZ"}
 
             self.dl.append(self.dicts)
+
+        #self.dl["date"] = pd.to_datetime(self.dl["date"])
 
         return pd.DataFrame(self.dl)
 
     def dateformatter(self, df, date_formatter):
         """This function dates a dataframe and applies a date fromat to the date column"""
         return df["date"].dt.strftime(date_formatter)
+
+    def category_finder(self, string):
+        cat = ['Recall','Alert','Discussion','News']
+        for i in range (len(cat)):
+            if cat[i].upper() in string.upper(): #case sensitive
+                return(cat[i])
+        return "News"
+
+    def url_corrector(self,url, partial_url):
+        self.url_end = [".com",".gov",".ie",".uk",".eu",".org",".ca",".int"]
+        self.st = []
+        for u in self.url_end:
+            try:
+                self.st = url.split(u)[0] + u
+                if url.split(u)[1]:
+                    break
+            except:
+                continue
+
+        if self.st[:len(self.st)] != partial_url:
+            self.st = str(self.st) + partial_url
+
+        return str(self.st)
+

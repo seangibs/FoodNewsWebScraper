@@ -112,7 +112,7 @@ class ButtonFunc(object):
                 ))
 
         if fsanz_var.get() == True:
-            self.data_list.append(scraper.fsanzdf())
+            self.data_list.append(scraper.fsanzdf("%d/%m/%Y"))
 
         if efsa_var.get() == True:
             self.data_list.append(scraper.convert( #EFSA
@@ -198,4 +198,6 @@ class ButtonFunc(object):
         self.df = pd.DataFrame()
         outp.delete('1.0', END)
 
-
+    def select_all(self, all_check, outp):
+        for a in all_check:
+            print(all_check)
