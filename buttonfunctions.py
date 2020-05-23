@@ -2,19 +2,23 @@ import pandas as pd
 import os
 from scraper import *
 from tkinter import *
+from frontend import *
 
 scraper = Scraper()
 
-class ButtonFunc(object):
+class ButtonFunc(FrontEnd):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        self.root = args[0]
         self.data_list = []
         self.df = pd.DataFrame()
+        self.tree = ttk.Treeview(self.root)
+        #self.populate_selection()
 
     def view_command(self,ec_rasff_var, ifsqn_var, fda_var, fsai_var, uk_fsa_var, usda_var, ifs_var, fssc_var, sf360_var, fsanz_var, efsa_var, un_fao_var, cfia_var, gfsi_var, fda_fsma_var, who_var, outp):
 
 
-        if ec_rasff_var.get() == True:
+        if ec_rasff_var.get() == False:
             self.data_list.append(scraper.ecrasff())
 
         if ifsqn_var.get() == True:
@@ -187,7 +191,9 @@ class ButtonFunc(object):
                 ))
 
         self.df = pd.concat(self.data_list)
-        outp.insert(END, self.df)
+
+        self.df_to_list(self.df)
+
 
     def generate_csv(self):
         os.chdir(r"C:\Users\seang\Desktop\FoodNewsApp\TestDoc")
@@ -196,8 +202,38 @@ class ButtonFunc(object):
     def reset(self,outp):
         self.data_list = []
         self.df = pd.DataFrame()
-        outp.delete('1.0', END)
+        self.df_to_list(self.df)
 
     def select_all(self, all_check, outp):
         for a in all_check:
             print(all_check)
+
+    def df_to_list(self,df):
+        self.tree.delete(*self.tree.get_children())
+        self.df = self.df.reset_index(drop=True)
+
+        self.tree["columns"] = df.columns.values.tolist()
+        for x in range(len(df.columns.values)):
+            self.tree.column(df.columns.values[x], width=100)
+            self.tree.heading(df.columns.values[x], text=df.columns.values[x], command=self.populate_selection)
+
+        for index, row in df.iterrows():
+            self.tree.insert("",0,text=index,values=list(row))
+
+        self.tree.grid(row=50,column=0,rowspan=1,columnspan=12,sticky=N+E+W+S)
+
+        self.tree.bind("<<TreeviewSelect>>", self.populate_selection)
+
+    def populate_selection(self,event):
+        item = self.tree.selection()
+        print("you clicked on", self.tree.item(item,"text"))
+        #FrontEnd.desc_tb = "test"
+
+    def add_value_to_df(self,dics):
+        self.df = self.df.append(dics, ignore_index=True)
+        self.df_to_list(self.df)
+
+
+
+if __name__ == "__main__":
+    app = ButtonFunc()

@@ -10,7 +10,7 @@ class Scraper(object):
         pd.options.display.width = 100
         pd.options.display.max_colwidth = 20
         pd.options.display.max_columns = 20
-        self.min_date = datetime.strptime("2020-05-19","%Y-%m-%d")
+        self.min_date = datetime.strptime("2020-05-22","%Y-%m-%d")
 
     def convert(self,page_div="div",class_page=None,desc_div=None,desc_class=None,link_div="a",link_class="href",date_div=None,date_class=None,url=None,loop_begin=0,desc_int=0,date_int=0,site_type = "NA",date_formatter="%Y %m %d"):
         """This is the main function for converting a site's data to a dataframe all other sites that cannot be called in this function have their own separate functino"""
