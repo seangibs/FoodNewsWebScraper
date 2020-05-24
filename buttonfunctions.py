@@ -15,7 +15,7 @@ class ButtonFunc(FrontEnd):
         self.tree = ttk.Treeview(self.root)
         #self.populate_selection()
 
-    def view_command(self,ec_rasff_var, ifsqn_var, fda_var, fsai_var, uk_fsa_var, usda_var, ifs_var, fssc_var, sf360_var, fsanz_var, efsa_var, un_fao_var, cfia_var, gfsi_var, fda_fsma_var, who_var, outp):
+    def view_command(self,ec_rasff_var, ifsqn_var, fda_var, fsai_var, uk_fsa_var, usda_var, ifs_var, fssc_var, sf360_var, fsanz_var, efsa_var, un_fao_var, cfia_var, gfsi_var, fda_fsma_var, who_var):
 
 
         if ec_rasff_var.get() == False:
@@ -220,7 +220,7 @@ class ButtonFunc(FrontEnd):
         for index, row in df.iterrows():
             self.tree.insert("",0,text=index,values=list(row))
 
-        self.tree.grid(row=50,column=0,rowspan=1,columnspan=12,sticky=N+E+W+S)
+        self.tree.grid(row=15,column=0,rowspan=1,columnspan=12,sticky=W)
 
         self.tree.bind("<<TreeviewSelect>>", self.populate_selection)
 
@@ -230,8 +230,10 @@ class ButtonFunc(FrontEnd):
         #FrontEnd.desc_tb = "test"
 
     def add_value_to_df(self,dics):
+        print(dics)
         self.df = self.df.append(dics, ignore_index=True)
         self.df_to_list(self.df)
+        print(self.df)
 
 
 

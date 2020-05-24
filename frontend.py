@@ -14,18 +14,15 @@ class FrontEnd(object):
         self.window = Tk()
         self.bf = ButtonFunc(self.window)
 
-        self.window.geometry("800x400")
+        self.window.geometry("1000x600")
 
         self.window.iconbitmap(self, default = "logo.ico")
         self.window.wm_title("Food News Scraper")
 
-        self.source_list = ["EC RASFF","IFSQN","FDA","FSAI","NZ FSA","UK FSA","USDA","USDA FSIS","IFS","FSSC","SF360","BRC","FSANZ","SQF","EFSA","UN FAO","CFIA","FDA FSMA","UN FAO","EC RAPID","WHO"]
-
         self.check_buttons()
         self.last_date()
         self.last_date()
-        self.entry_data_labels()
-        self.entry_data()
+        self.enter_data()
         self.output_window()
         self.buttons()
 
@@ -33,6 +30,7 @@ class FrontEnd(object):
 
 
     def check_buttons(self):
+        """All Check Buttons for sources of news"""
         ##Column 0
         self.ec_rasff_var = BooleanVar(value=1)
         self.ec_rasff = ttk.Checkbutton(self.window, text="EC RASFF", var = self.ec_rasff_var).grid(row=0,column=0,rowspan=1,sticky=W)
@@ -98,17 +96,19 @@ class FrontEnd(object):
         self.who_var = BooleanVar(value=1)
         self.who = ttk.Checkbutton(self.window, text="WHO", var = self.who_var).grid(row=3,column=4,rowspan=1,sticky=W)
 
-
     def last_date(self):
+        """Date to be passed to the button function class to restrict the last date of news"""
         #Date
         self.min_date_text = ttk.Label(self.window, width = 10, text = "Last Date")
         self.min_date_text.grid(row=5,column=4,rowspan=1,columnspan=1,sticky=W)
 
-    def entry_data_labels(self):
+    def enter_data(self):
+        """Users will enter data here"""
         #Category
         self.cat_text = ttk.Label(self.window, width = 10, text = "Category")
         self.cat_text.grid(row=5,column=0,rowspan=1,columnspan=1,sticky=W)
 
+        #list for category drop down
         self.OptionList = [
         "News"
         , "Alert"
@@ -124,20 +124,19 @@ class FrontEnd(object):
         self.date_text = ttk.Label(self.window, width = 8, text = "Date")
         self.date_text.grid(row=5,column=1,rowspan=1,columnspan=1,sticky=W)
 
-        self.date_picked = datetime.date(year=2018, month=1, day=21)
-        self.date = DateEntry(self.window, var = self.date_picked).grid(row=6,column=1,rowspan=1,sticky=W)
+        #Enter date
+        self.date_picker = DateEntry(self.window)
+        self.date_picker.grid(row=6,column=1,rowspan=1,sticky=W)
 
         #Sources
+        self.source_list = ["EC RASFF","IFSQN","FDA","FSAI","NZ FSA","UK FSA","USDA","USDA FSIS","IFS","FSSC","SF360","BRC","FSANZ","SQF","EFSA","UN FAO","CFIA","FDA FSMA","UN FAO","EC RAPID","WHO"]
         self.source_text = ttk.Label(self.window, width = 8, text = "Source")
         self.source_text.grid(row=5,column=2,rowspan=1,columnspan=1,sticky=W)
         self.source_variable = StringVar(self.window)
 
         self.source_variable.set(self.source_list[0]) # default value
 
-        self.s = ttk.OptionMenu(self.window, self.source_variable, *self.source_list).grid(row=6,column=2,rowspan=1,sticky=W)
-
-    def entry_data(self):
-        #Desription
+        #Description
         self.desc_text = ttk.Label(self.window, width = 12, text = "Description:")
         self.desc_text.grid(row=8,column=0,rowspan=1,columnspan=1,sticky=W)
 
@@ -151,28 +150,33 @@ class FrontEnd(object):
         self.url_tb = Text(self.window,height = 1, width = 40)
         self.url_tb.grid(row=9,column=1,rowspan=1,columnspan=6,sticky=W)
 
+        self.s = ttk.OptionMenu(self.window, self.source_variable, *self.source_list).grid(row=6,column=2,rowspan=1,sticky=W)
+
+
     def output_window(self):
         self.outp = Listbox(self.window)
         # self.outp.grid(row=12,column=0,rowspan=1,columnspan=12,sticky="w")
 
     def buttons(self):
+        """Buttons to interact with the backend"""
 
+        #Generate all news sources selected
         self.view_all = ttk.Button(self.window, width = 12, text = "View All"
             , command = partial(self.bf.view_command, self.ec_rasff_var, self.ifsqn_var, self.fda_var, self.fsai_var, self.uk_fsa_var, self.usda_var, self.ifs_var, self.fssc_var, self.sf360_var, self.fsanz_var, self.efsa_var, self.un_fao_var, self.cfia_var, self.gfsi_var, self.fda_fsma_var, self.who_var, self.outp)
             ).grid(row=0,column=5,rowspan=1,columnspan=1,sticky=W)
 
+        #Export to CSV
         self.generate_csv = ttk.Button(self.window, width = 12, text = "CSV Export"
             , command = self.bf.generate_csv).grid(row=1,column=5,rowspan=1,columnspan=1,sticky=W)
 
+        #Clear window and dataframe
         self.reset = ttk.Button(self.window, width = 12, text = "Reset"
             , command = partial(self.bf.reset, self.outp)).grid(row=2,column=5,rowspan=1,columnspan=1,sticky=W)
 
-        self.select = ttk.Button(self.window, width = 12, text = "Select"
-            , command = partial(self.bf.reset, self.outp)).grid(row=3,column=5,rowspan=1,columnspan=1,sticky=W)
-
+        #Send the entered data from enter_data to the backend
         self.addtodf = ttk.Button(self.window, width = 12, text = "Add"
-            , command = partial(self.bf.add_value_to_df,({"category": self.variable.get()
-                    , "description": "", "link": "test link", "date" : self.date_picked, "site_type": self.source_variable.get()})
+            , command = partial(self.bf.add_value_to_df,
+                ({"category": self.variable.get(), "description": self.desc_tb.get('1.0', END), "link": self.desc_tb.get('1.0', END), "date" : self.date_picker.get_date(), "site_type": self.source_variable.get()})
                 )).grid(row=3,column=5,rowspan=1,columnspan=1,sticky=W)
 
 
