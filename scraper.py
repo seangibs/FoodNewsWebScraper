@@ -152,7 +152,7 @@ class Scraper(object):
 
     def dateformatter(self, df, date_formatter):
         """This function dates a dataframe and applies a date fromat to the date column"""
-        return df["date"].dt.strftime(date_formatter)
+        return df["date"].dt.strftime(date_formatter).date()
 
     def category_finder(self, string):
         cat = ['Recall','Alert','Discussion','News']

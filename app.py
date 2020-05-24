@@ -1,3 +1,3 @@
-from frontend import *
+from frontend import FrontEnd
 
 FrontEnd()
