@@ -10,11 +10,12 @@ class Scraper(object):
         pd.options.display.width = 100
         pd.options.display.max_colwidth = 20
         pd.options.display.max_columns = 20
-        self.min_date = datetime.strptime("2020-05-22","%Y-%m-%d")
 
-    def convert(self,page_div="div",class_page=None,desc_div=None,desc_class=None,link_div="a",link_class="href",date_div=None,date_class=None,url=None,loop_begin=0,desc_int=0,date_int=0,site_type = "NA",date_formatter="%Y %m %d"):
+
+    def convert(self,page_div="div",class_page=None,desc_div=None,desc_class=None,link_div="a",link_class="href",date_div=None,date_class=None,url=None,loop_begin=0,desc_int=0,date_int=0,site_type = "NA",date_formatter="%Y %m %d",mn_date="2020-05-20"):
         """This is the main function for converting a site's data to a dataframe all other sites that cannot be called in this function have their own separate functino"""
 
+        self.min_date = datetime.strptime(str(mn_date),"%Y-%m-%d")
         self.dict_list = []
 
         self.dict = {}
@@ -74,8 +75,9 @@ class Scraper(object):
         return(self.df)
 
 
-    def ecrasff(self):
+    def ecrasff(self,mn_date):
         """EC RASFF function for returning dataframe of EC RASFF news"""
+        self.min_date = datetime.strptime(str(mn_date),"%Y-%m-%d")
         self.df = pd.read_html("https://webgate.ec.europa.eu/rasff-window/portal/index.cfm?event=notificationsList")[0]
 
         self.df["Date of case"] = pd.to_datetime(self.df["Date of case"])
@@ -88,8 +90,9 @@ class Scraper(object):
 
         return(self.df)
 
-    def fda(self):
+    def fda(self,mn_date):
         """FDA function for returning dataframe of FDA news"""
+        self.min_date = datetime.strptime(str(mn_date),"%Y-%m-%d")
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0',
             'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -113,8 +116,9 @@ class Scraper(object):
         self.df.insert(4, "site_type", "FDA")
         return(self.df)
 
-    def ifsqn(self,date_formatter):
+    def ifsqn(self,date_formatter,mn_date):
         """IFSQN function for returning dataframe of IFSQN news"""
+        self.min_date = datetime.strptime(str(mn_date),"%Y-%m-%d")
         self.parsed_rss = feedparser.parse('https://www.ifsqn.com/forum/index.php/rss/forums/4-food-safety-quality-discussion/')
 
         self.df["date"] = pd.to_datetime(self.df["date"])
@@ -126,8 +130,9 @@ class Scraper(object):
         self.df["date"] = pd.to_datetime(self.df["date"])
         return(self.df)
 
-    def fsanzdf(self, date_formatter):
+    def fsanzdf(self, date_formatter,mn_date):
         """FSANZ function for returning dataframe of FSANZ news"""
+        self.min_date = datetime.strptime(str(mn_date),"%Y-%m-%d")
         self.dl = []
         self.r = requests.get("https://www.foodstandards.gov.au/industry/foodrecalls/recalls/Pages/default.aspx")
         self.soup = BeautifulSoup(self.r.text,'html.parser')
