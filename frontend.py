@@ -14,48 +14,51 @@ class FrontEnd(object):
 
         self.tree = ttk.Treeview(self.window)
 
-        self.window.geometry("1000x500")
+        self.window.geometry("1050x500")
 
         self.window.iconbitmap(self, default = "logo.ico")
         self.window.wm_title("Food News")
 
-        self.all_var = BooleanVar(value=1)
+        self.all_var = BooleanVar(value=0)
         self.df = pd.DataFrame(columns=["category","description","link","date","site_type"])
 
         self.buttons()
 
         self.window.mainloop()
 
-
+    def all_select(self):
+        for item in self.source_var:
+            item.set(self.all_var.get())
 
     def buttons(self):
-        """All Check Buttons for sources of news"""
+        """Display Buttons & Output Window"""
         #List of checkbutton text
-        self.source_list = ["EC RASFF","IFSQN","FDA","FSAI","UK FSA","USDA","IFS","FSSC","SF360","FSANZ","EFSA","UN FAO","CFIA","GFSI","FDA FSMA","WHO","NZ FSA","USDA FSIS","BRC","SQF","UN FAO"]
+        self.source_list = ["EC RASFF","IFSQN","FDA","FSAI","UK FSA","USDA","IFS","FSSC","SF360","FSANZ","EFSA","CFIA","GFSI","FDA FSMA","WHO","NZ FSA","USDA FSIS","BRC","SQF","UN FAO"]
         # #The variable for each text button which will be used later in the script to determine which method to call e.g. if self.source_var[i].get() == True: do something
         self.source_var = []
 
+        ttk.Checkbutton(self.window, text = "All", var = self.all_var, command = self.all_select).grid(row=0,column=0,sticky=W)
+
         j = 0
-        k = 0
+        k = 1
 
         #loop to create checkbttons
         for i in range(len(self.source_list)):
-            self.var = BooleanVar(value=1)
+            self.var = BooleanVar(value=0)
             self.source_var.append(self.var) #add var to list
-            ttk.Checkbutton(self.window, text = self.source_list[i], var = self.source_var[i]).grid(row=k,column=j,rowspan=1,sticky=W)
+            ttk.Checkbutton(self.window, text = self.source_list[i], var = self.source_var[i]).grid(row=k,column=j,pady=2,columnspan=1,sticky=W)
             k += 1
             #new column
             if k == 4:
                 k = 0
                 j += 1
 
-
         #Dictionary for checking variable state later
         self.source_dict = dict(zip(self.source_list,self.source_var))
 
 
         self.min_date_text = ttk.Label(self.window, width = 10, text = "",anchor=E)
-        self.min_date_text.grid(row=5,column=7,rowspan=1,columnspan=1,sticky=W)
+        self.min_date_text.grid(row=5,column=12,rowspan=1,columnspan=1,sticky=W)
 
         #Date
         self.min_date_text = ttk.Label(self.window, width = 10, text = "Last Date",anchor=W)
@@ -69,7 +72,7 @@ class FrontEnd(object):
         """Users will enter data here"""
         #Category
         self.cat_text = ttk.Label(self.window, width = 10, text = "Category:")
-        self.cat_text.grid(row=6,column=0,rowspan=1,columnspan=1,pady=10,sticky=E)
+        self.cat_text.grid(row=6,column=0,rowspan=1,columnspan=1,pady=5,sticky=W)
 
         #list for category drop down
         self.option_list = [
@@ -81,7 +84,7 @@ class FrontEnd(object):
         self.category_text = StringVar(self.window)
         self.category_text.set(self.option_list[0]) # default value
 
-        self.w = ttk.OptionMenu(self.window, self.category_text, *self.option_list).grid(row=6,column=1,rowspan=1,sticky=W)
+        self.w = ttk.OptionMenu(self.window, self.category_text, *self.option_list).grid(row=6,column=1,rowspan=1,columnspan=2,sticky=W)
 
         #Date
         self.date_text = ttk.Label(self.window, width = 8, text = "Date:")
@@ -89,7 +92,7 @@ class FrontEnd(object):
 
         #Enter date
         self.date_picker = DateEntry(self.window,date_pattern="DD/MM/YY")
-        self.date_picker.grid(row=6,column=3,rowspan=1,pady=5,sticky=W)
+        self.date_picker.grid(row=6,column=3,rowspan=1,columnspan=2,sticky=W)
 
         #Sources
 
@@ -102,7 +105,7 @@ class FrontEnd(object):
         ttk.OptionMenu(self.window, self.source_variable, *self.source_list).grid(row=6,column=5,rowspan=1,sticky=W)
 
         #Description
-        self.desc_text = ttk.Label(self.window, width = 12, text = "Description:")
+        self.desc_text = ttk.Label(self.window, width = 15, text = "Description:")
         self.desc_text.grid(row=8,column=0,rowspan=1,columnspan=1,pady=5,sticky=W)
 
 
@@ -110,7 +113,7 @@ class FrontEnd(object):
         self.desc_tb.grid(row=8,column=1,rowspan=1,columnspan=7,sticky=W)
 
         #URL
-        self.url_text = ttk.Label(self.window, width = 8, text = "URL:")
+        self.url_text = ttk.Label(self.window, width = 15, text = "URL:")
         self.url_text.grid(row=9,column=0,rowspan=1,columnspan=1,pady=5,sticky=W)
 
         self.url_tb = ttk.Entry(self.window,width = 149)
@@ -158,214 +161,198 @@ class FrontEnd(object):
         self.tree.column("#5", width=75)
         self.tree.bind("<<TreeviewSelect>>", self.populate_selection)
 
-        self.scraper = Scraper()
-
     def view_command(self):
+
+        self.scraper = Scraper(self.min_date_picker.get_date())
 
         self.data_list = []
 
-        if self.source_dict.get("EC RASFF").get() == True:
-            self.data_list.append(self.scraper.ecrasff(mn_date = self.min_date_picker.get_date()))
+        for v in self.source_var:
 
-        if self.source_dict.get("IFSQN").get() == True:
-            self.data_list.append(self.scraper.convert( #IFS
-                class_page = "well"
-                ,desc_div = "h4"
-                ,desc_class = "media-heading"
-                ,date_div = "h5"
-                ,url = ["https://www.ifs-certification.com/index.php/en/news"]
-                ,site_type = "IFS"
-                ,date_formatter = "%d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+            if v.get():
 
-        if self.source_dict.get("FDA").get() == True:
-            self.data_list.append(self.scraper.convert( #FDA FSMA
-                page_div = "tr"
-                ,desc_div = "a"
-                ,date_div = "td"
-                ,loop_begin = 1
-                ,date_int = 1
-                ,url = ["https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-rules-guidance-industry"]
-                ,site_type = "FDA FSMA"
-                ,date_formatter = "%Y/%m"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("EC RASFF").get() == True:
+                    self.data_list.append(self.scraper.ecrasff())
 
-        if self.source_dict.get("FSAI").get() == True:
-            self.data_list.append(self.scraper.convert( #FSAI
-                class_page = "news-listing"
-                ,desc_div = "p"
-                ,desc_class = "title"
-                ,date_div = "em"
-                ,date_class = "emp"
-                ,url = ["https://www.fsai.ie/news_centre/food_alerts.html","https://www.fsai.ie/news_centre/allergen_alerts.html"]
-                ,site_type = "FSAI"
-                ,date_formatter = "%A, %d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("IFSQN").get() == True:
+                    self.data_list.append(self.scraper.ifsqn( #IFSQN
+                        ))
 
-        if self.source_dict.get("UK FSA").get() == True:
-            self.data_list.append(self.scraper.convert( #UK FSA
-                class_page = "views-row"
-                ,desc_div = "p"
-                ,date_div = "span"
-                ,date_class = "field field__created"
-                ,url = ["https://www.food.gov.uk/news-alerts/search/alerts"]
-                ,site_type = "UK FSA"
-                ,date_formatter = "%d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("FDA").get() == True:
+                    self.data_list.append(self.scraper.fda( #FDA FSMA
+                        ))
 
-        if self.source_dict.get("USDA").get() == True:
-            self.data_list.append(self.scraper.convert( #USDA
-                page_div = "li"
-                ,class_page = "news-releases-item"
-                ,desc_div = "a"
-                ,date_div = "div"
-                ,date_class = "news-release-date"
-                ,url = ["https://www.usda.gov/media/press-releases"]
-                ,site_type = "USDA"
-                ,date_formatter = "%b %d, %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("FSAI").get() == True:
+                    self.data_list.append(self.scraper.convert( #FSAI
+                        class_page = "news-listing"
+                        ,desc_div = "p"
+                        ,desc_class = "title"
+                        ,date_div = "em"
+                        ,date_class = "emp"
+                        ,url = ["https://www.fsai.ie/news_centre/food_alerts.html","https://www.fsai.ie/news_centre/allergen_alerts.html"]
+                        ,site_type = "FSAI"
+                        ,date_formatter = "%A, %d %B %Y"
+                        ))
 
-        if self.source_dict.get("IFS").get() == True:
-            self.data_list.append(self.scraper.convert( #IFS
-                class_page = "well"
-                ,desc_div = "h4"
-                ,desc_class = "media-heading"
-                ,date_div = "h5"
-                ,url = ["https://www.ifs-certification.com/index.php/en/news"]
-                ,site_type = "IFS"
-                ,date_formatter = "%d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("UK FSA").get() == True:
+                    self.data_list.append(self.scraper.convert( #UK FSA
+                        class_page = "views-row"
+                        ,desc_div = "p"
+                        ,date_div = "span"
+                        ,date_class = "field field__created"
+                        ,url = ["https://www.food.gov.uk/news-alerts/search/alerts"]
+                        ,site_type = "UK FSA"
+                        ,date_formatter = "%d %B %Y"
+                        ))
 
-        if self.source_dict.get("FSSC").get() == True:
-            self.data_list.append(self.scraper.convert( #FSSC 22000
-                page_div = "a"
-                ,class_page = "news-item news-item-archive"
-                ,desc_div = "h2"
-                ,desc_class = "news-item__title"
-                ,date_div = "time"
-                ,url = ["https://www.fssc22000.com/news/"]
-                ,site_type = "FSSC 22000"
-                ,date_formatter = "%d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("USDA").get() == True:
+                    self.data_list.append(self.scraper.convert( #USDA
+                        page_div = "li"
+                        ,class_page = "news-releases-item"
+                        ,desc_div = "a"
+                        ,date_div = "div"
+                        ,date_class = "news-release-date"
+                        ,url = ["https://www.usda.gov/media/press-releases"]
+                        ,site_type = "USDA"
+                        ,date_formatter = "%b %d, %Y"
+                        ))
 
-        if self.source_dict.get("SF360").get() == True:
-            self.data_list.append(self.scraper.convert( #SF360
-                page_div = "a"
-                ,class_page = "^av-masonry-entry"
-                ,desc_div = "h3"
-                ,desc_class = "av-masonry-entry-title entry-title"
-                ,date_div = "span"
-                ,date_class = "av-masonry-date meta-color updated"
-                ,url = ["https://safefood360.com/blog/"]
-                ,site_type = "SF360"
-                ,date_formatter = "%B %d, %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("IFS").get() == True:
+                    self.data_list.append(self.scraper.convert( #IFS
+                        class_page = "well"
+                        ,desc_div = "h4"
+                        ,desc_class = "media-heading"
+                        ,date_div = "h5"
+                        ,url = ["https://www.ifs-certification.com/index.php/en/news"]
+                        ,site_type = "IFS"
+                        ,date_formatter = "%d %B %Y"
+                        ))
 
-        if self.source_dict.get("FSANZ").get() == True:
-            self.data_list.append(self.scraper.fsanzdf("%d/%m/%Y"
-                ,mn_date = self.min_date_picker.get_date()))
+                if self.source_dict.get("FSSC").get() == True:
+                    self.data_list.append(self.scraper.convert( #FSSC 22000
+                        page_div = "a"
+                        ,class_page = "news-item news-item-archive"
+                        ,desc_div = "h2"
+                        ,desc_class = "news-item__title"
+                        ,date_div = "time"
+                        ,url = ["https://www.fssc22000.com/news/"]
+                        ,site_type = "FSSC 22000"
+                        ,date_formatter = "%d %B %Y"
+                        ))
 
-        if self.source_dict.get("EFSA").get() == True:
-            self.data_list.append(self.scraper.convert( #EFSA
-                class_page = "^views-row views-row-"
-                ,desc_div = "span"
-                ,desc_class = "field-content"
-                ,date_div = "span"
-                ,date_class = "date-display-single"
-                ,url = ["http://www.efsa.europa.eu/en/news"]
-                ,site_type = "EFSA"
-                ,date_formatter = "%d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("SF360").get() == True:
+                    self.data_list.append(self.scraper.convert( #SF360
+                        page_div = "a"
+                        ,class_page = "^av-masonry-entry"
+                        ,desc_div = "h3"
+                        ,desc_class = "av-masonry-entry-title entry-title"
+                        ,date_div = "span"
+                        ,date_class = "av-masonry-date meta-color updated"
+                        ,url = ["https://safefood360.com/blog/"]
+                        ,site_type = "SF360"
+                        ,date_formatter = "%B %d, %Y"
+                        ))
 
-        if self.source_dict.get("UN FAO").get() == True:
-            self.data_list.append(self.scraper.convert( #FAO
-                class_page = "^tx-dynalist-pi1-recordlist tx-dynalist-pi1-recordlist-"
-                ,desc_div = "div"
-                ,desc_class = "list-subtitle"
-                ,date_div = "div"
-                ,date_class = "list-date"
-                ,url = ["http://www.fao.org/news/archive/news-by-date/2020/en/"]
-                ,site_type = "UN FAO"
-                ,date_formatter = "%d-%m-%Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("FSANZ").get() == True:
+                    self.data_list.append(self.scraper.fsanzdf("%d/%m/%Y"))
 
-        if self.source_dict.get("CFIA").get() == True:
-            self.data_list.append(self.scraper.convert( #CFIA
-                page_div="tr"
-                ,desc_div="td"
-                ,date_div="td"
-                ,url = ["https://www.inspection.gc.ca/about-cfia/newsroom/food-recall-warnings/eng/1299076382077/1299076493846"]
-                ,loop_begin = 1
-                ,desc_int = 1
-                ,site_type = "CFIA"
-                ,date_formatter = "%Y-%m-%d"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("EFSA").get() == True:
+                    self.data_list.append(self.scraper.convert( #EFSA
+                        class_page = "^views-row views-row-"
+                        ,desc_div = "span"
+                        ,desc_class = "field-content"
+                        ,date_div = "span"
+                        ,date_class = "date-display-single"
+                        ,url = ["http://www.efsa.europa.eu/en/news"]
+                        ,site_type = "EFSA"
+                        ,date_formatter = "%d %B %Y"
+                        ))
 
-        if self.source_dict.get("GFSI").get() == True:
-            self.data_list.append(self.scraper.convert( #GFSI
-                class_page = "grid-body"
-                ,desc_div = "div"
-                ,desc_class = "section-title"
-                ,date_div = "div"
-                ,date_class = "post-date"
-                ,url = ["https://mygfsi.com/news-and-resources/?type=news_updates"]
-                ,site_type = "GFSI"
-                ,date_formatter = "%d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("UN FAO").get() == True:
+                    self.data_list.append(self.scraper.convert( #FAO
+                        class_page = "^tx-dynalist-pi1-recordlist tx-dynalist-pi1-recordlist-"
+                        ,desc_div = "div"
+                        ,desc_class = "list-subtitle"
+                        ,date_div = "div"
+                        ,date_class = "list-date"
+                        ,url = ["http://www.fao.org/news/archive/news-by-date/2020/en/"]
+                        ,site_type = "UN FAO"
+                        ,date_formatter = "%d-%m-%Y"
+                        ))
 
-        if self.source_dict.get("FDA FSMA").get() == True:
-            self.data_list.append(self.scraper.convert( #FDA FSMA
-                page_div = "tr"
-                ,desc_div = "a"
-                ,date_div = "td"
-                ,loop_begin = 1
-                ,date_int = 1
-                ,url = ["https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-rules-guidance-industry"]
-                ,site_type = "FDA FSMA"
-                ,date_formatter = "%Y/%m"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("CFIA").get() == True:
+                    self.data_list.append(self.scraper.convert( #CFIA
+                        page_div="tr"
+                        ,desc_div="td"
+                        ,date_div="td"
+                        ,url = ["https://www.inspection.gc.ca/about-cfia/newsroom/food-recall-warnings/eng/1299076382077/1299076493846"]
+                        ,loop_begin = 1
+                        ,desc_int = 1
+                        ,site_type = "CFIA"
+                        ,date_formatter = "%Y-%m-%d"
+                        ))
 
-        if self.source_dict.get("WHO").get() == True:
-            self.data_list.append(self.scraper.convert( #WHO
-                class_page = "list-view--item vertical-list-item"
-                ,desc_div = "p"
-                ,desc_class = "heading text-underline"
-                ,date_div = "span"
-                ,date_class = "timestamp"
-                ,url = ["https://www.who.int/news-room/releases", "https://www.who.int/news-room/releases/2"]
-                ,site_type = "WHO"
-                ,date_formatter = "%d %B %Y"
-                ,mn_date = self.min_date_picker.get_date()
-                ))
+                if self.source_dict.get("GFSI").get() == True:
+                    self.data_list.append(self.scraper.convert( #GFSI
+                        class_page = "grid-body"
+                        ,desc_div = "div"
+                        ,desc_class = "section-title"
+                        ,date_div = "div"
+                        ,date_class = "post-date"
+                        ,url = ["https://mygfsi.com/news-and-resources/?type=news_updates"]
+                        ,site_type = "GFSI"
+                        ,date_formatter = "%d %B %Y"
+                        ))
 
-        self.df = pd.concat(self.data_list)
-        #self.df.loc[self.df["date"] < self.min_date]
-        self.df["date"] = pd.to_datetime(self.df["date"]).dt.date
-        self.df = self.df.reset_index(drop=True)
+                if self.source_dict.get("FDA FSMA").get() == True:
+                    self.data_list.append(self.scraper.convert( #FDA FSMA
+                        page_div = "tr"
+                        ,desc_div = "a"
+                        ,date_div = "td"
+                        ,loop_begin = 1
+                        ,date_int = 1
+                        ,url = ["https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-rules-guidance-industry"]
+                        ,site_type = "FDA FSMA"
+                        ,date_formatter = "%Y/%m"
+                        ))
 
-        self.df_to_list(self.df)
+                if self.source_dict.get("WHO").get() == True:
+                    self.data_list.append(self.scraper.convert( #WHO
+                        class_page = "list-view--item vertical-list-item"
+                        ,desc_div = "p"
+                        ,desc_class = "heading text-underline"
+                        ,date_div = "span"
+                        ,date_class = "timestamp"
+                        ,url = ["https://www.who.int/news-room/releases", "https://www.who.int/news-room/releases/2"]
+                        ,site_type = "WHO"
+                        ,date_formatter = "%d %B %Y"
+                        ))
+
+
+                try:
+                    logging.info("Creating DataFrame")
+                    self.df = pd.concat(self.data_list)
+                    self.df = self.df.reset_index(drop=True).drop_duplicates(subset=None, keep="first", inplace=False)
+                    self.df["description"] = self.df["description"].str.capitalize()
+                    self.df_to_list(self.df)
+
+                except:
+                    logging.warning("Could not create dataframe")
+
+                return
+
+
+        logging.info("No option selected")
+        return
+
 
     def generate_csv(self):
         self.save_file(str(self.df),".txt")
 
-
     def reset(self):
         self.df = pd.DataFrame(columns=["category","description","link","date","site_type"])
         self.tree.delete(*self.tree.get_children())
-        self.buttons()
+        #self.buttons()
 
     def select_all(self, all_check):
         for a in all_check:
