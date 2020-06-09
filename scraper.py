@@ -14,20 +14,20 @@ class Scraper(object):
         pd.options.display.width = 100
         pd.options.display.max_colwidth = 20
         pd.options.display.max_columns = 20
-        self.df = pd.DataFrame(columns=["category","description","link","date","site_type"])
+        self.df = pd.DataFrame(columns=["Category","Description","Link","date","Source"])
         try:
             self.min_date = datetime.strptime(str(mn_date),"%Y-%m-%d").date()
         except:
-            logging.warning("Could not convert date for date: %s url: %s site: %s" % (mn_date, url, site_type))
+            logging.warning("Could not convert date for date: %s url: %s site: %s" % (mn_date, url, Source))
             return
 
 
     def convert(self,page_div="div",class_page=None,desc_div=None,desc_class=None,link_div="a"
         ,link_class="href",date_div=None,date_class=None,url=None,loop_begin=0,desc_int=0
-        ,date_int=0,site_type = "NA",date_formatter="%Y %m %d"):
+        ,date_int=0,Source = "NA",date_formatter="%Y %m %d"):
         """This is the main function for converting a site's data to a dataframe all other sites that cannot be called in this function have their own separate functino"""
 
-        logging.info("Finding info for site: %s url: %s" % (site_type, url))
+        logging.info("Finding info for site: %s url: %s" % (Source, url))
 
         self.dict_list = []
 
@@ -42,7 +42,7 @@ class Scraper(object):
             try:
                 self.r = requests.get(u, headers = self.headers)
             except:
-                logging.warning("Could not connect to site: %s url: %s" % (site_type, url))
+                logging.warning("Could not connect to site: %s url: %s" % (Source, url))
                 return
 
             self.r.encoding = "utf-8" #" and ' returning errors need to correct. Workaround could be to replace these symbols with a blank
@@ -57,7 +57,7 @@ class Scraper(object):
                 self.all = self.soup.find_all(page_div, class_ = class_page)
 
             except:
-                logging.warning("Could not retrieve content for site: %s url: %s content:%s" % (site_type, url,self.r.content))
+                logging.warning("Could not retrieve content for site: %s url: %s content:%s" % (Source, url,self.r.content))
                 return
 
             for item in self.all[loop_begin:]:
@@ -65,13 +65,13 @@ class Scraper(object):
                 try:
                     self.desc = item.find_all(desc_div, class_ = desc_class)[desc_int].text.strip()
                 except:
-                    logging.info("Could not find description for site: %s url: %s \n div: %s \nclass: %s \nint: %s \n HTML: %s" % (site_type, url, desc_div, desc_class, desc_int,item))
+                    logging.info("Could not find Description for site: %s url: %s \n div: %s \nclass: %s \nint: %s \n HTML: %s" % (Source, url, desc_div, desc_class, desc_int,item))
                     continue
 
                 try:
                     cat = self.category_finder(self.desc)
                 except:
-                    logging.warning("Could not find a category for site: %s url: %s \n deasc: %s" % (site_type, url, self.desc))
+                    logging.warning("Could not find a Category for site: %s url: %s \n deasc: %s" % (Source, url, self.desc))
 
 
                 try:
@@ -84,13 +84,13 @@ class Scraper(object):
 
                 try:
                     self.date = item.find_all(date_div, class_ = date_class)[date_int].text.strip() #add if date < date then continue for loop to begining of for loop
-                    if site_type == "IFS":
+                    if Source == "IFS":
                         self.date = datetime.strptime(re.sub("Published Date ", "", self.date),date_formatter).date()
 
                     else:
                         self.date = datetime.strptime(self.date,date_formatter).date()
                 except:
-                    logging.warning("Could not find a date for %s, %s, %s, %s" %(self.link,self.desc, self.date, site_type))
+                    logging.warning("Could not find a date for %s, %s, %s, %s" %(self.link,self.desc, self.date, Source))
                     continue
 
                 if self.date < self.min_date:
@@ -99,7 +99,7 @@ class Scraper(object):
                 print(u)
 
                 print(self.link)
-                self.dicts = {"category": cat, "description": self.desc, "link": self.url_corrector(u, self.link), "date" : self.date, "site_type": site_type}
+                self.dicts = {"Category": cat, "Description": self.desc, "Link": self.url_corrector(u, self.link), "Date" : self.date, "Source": Source}
 
                 self.dict_list.append(self.dicts)
 
@@ -120,10 +120,10 @@ class Scraper(object):
         try:
             logging.info("Creating DataFrame for ECRASFF")
             self.df = self.df[["Subject","Reference","Date of case"]]
-            self.df.insert(0, "category", "Alert")
-            self.df.insert(4, "site_type", "EC RASFF")
-            self.df.rename(columns={"Subject": "description", "Reference": "link", "Date of case": "date" }, inplace=True)
-            self.df["link"] = self.df["link"].apply(lambda x: "{}{}".format("https://webgate.ec.europa.eu/rasff-window/portal/index.cfm?event=notificationDetail&NOTIF_REFERENCE=", x))
+            self.df.insert(0, "Category", "Alert")
+            self.df.insert(4, "Source", "EC RASFF")
+            self.df.rename(columns={"Subject": "Description", "Reference": "Link", "Date of case": "Date" }, inplace=True)
+            self.df["Link"] = self.df["Link"].apply(lambda x: "{}{}".format("https://webgate.ec.europa.eu/rasff-window/portal/index.cfm?event=notificationDetail&NOTIF_REFERENCE=", x))
 
         except:
             logging.warning("Could not create datframe for ECRASFF")
@@ -132,7 +132,7 @@ class Scraper(object):
         try:
             logging.info("Restricting by date")
             self.df["date"] = pd.to_datetime(self.df["date"]).dt.date
-            self.df = self.df[self.df["date"] > self.min_date]
+            self.df = self.df[self.df["Date"] > self.min_date]
 
         except:
             logging.warning("Could not apply date restriction on ECRASFF")
@@ -168,22 +168,22 @@ class Scraper(object):
         try:
             logging.info("Creating DataFrame for FDA")
 
-            self.df["description"] = self.df[["field_company_name"] + ["field_recall_reason_description"] + ["field_recall_reason"]].agg(' :: '.join, axis=1)
-            self.df["date"] = pd.to_datetime(self.df["field_change_date_2"])
-            self.df["link"] = self.df["path"]
-            self.df = self.df[["description","link","date"]]
-            self.df.insert(0, "category", "News")
-            self.df.insert(4, "site_type", "FDA")
-            self.df["link"] = self.df["link"].apply(lambda x: "{}{}".format("https://www.fda.gov", x))
-            self.df["date"] = self.df['date'].dt.date
+            self.df["Description"] = self.df[["field_company_name"] + ["field_recall_reason_description"] + ["field_recall_reason"]].agg(' :: '.join, axis=1)
+            self.df["Date"] = pd.to_datetime(self.df["field_change_date_2"])
+            self.df["Link"] = self.df["path"]
+            self.df = self.df[["Description","Link","Date"]]
+            self.df.insert(0, "Category", "News")
+            self.df.insert(4, "Source", "FDA")
+            self.df["Link"] = self.df["Link"].apply(lambda x: "{}{}".format("https://www.fda.gov", x))
+            self.df["Date"] = self.df['Date'].dt.date
 
         except:
             logging.warning("Could not create datframe for FDA")
             return
 
         try:
-            logging.info("Restricting FDA by date")
-            self.df = self.df[self.df["date"] > self.min_date]
+            logging.info("Restricting FDA by Date")
+            self.df = self.df[self.df["Date"] > self.min_date]
 
         except:
             logging.warning("Could not apply date restriction on FDA")
@@ -204,21 +204,21 @@ class Scraper(object):
 
         try:
             logging.info("Creating DataFrame for IFSQN")
-            self.df = pd.DataFrame(self.parsed_rss['entries'])[["title","summary","link","published"]]
+            self.df = pd.DataFrame(self.parsed_rss['entries'])[["title","summary","Link","published"]]
             self.df['summary'] = [BeautifulSoup(text,features="lxml").get_text() for text in self.df['summary']]
 
             #Might be needed in the future
-            #self.df["description"] = self.df[["title"] + ["summary"]].agg(' :: '.join, axis=1)
-            self.df["description"] = self.df[["title"]]
+            #self.df["Description"] = self.df[["title"] + ["summary"]].agg(' :: '.join, axis=1)
+            self.df["Description"] = self.df[["title"]]
             self.df.drop("title", axis=1, inplace=True)
             self.df.drop("summary", axis=1, inplace=True)
 
-            self.df.rename(columns={"published": "date" }, inplace=True)
-            self.df.insert(0, "category", "Discussion")
-            self.df.insert(4, "site_type", "IFSQN")
-            self.df["date"] = pd.to_datetime(self.df["date"])
-            self.df["date"] = self.df['date'].dt.date
-            self.df = self.df[["category","description","link","date","site_type"]]
+            self.df.rename(columns={"published": "Date" }, inplace=True)
+            self.df.insert(0, "Category", "Discussion")
+            self.df.insert(4, "Source", "IFSQN")
+            self.df["Date"] = pd.to_datetime(self.df["Date"])
+            self.df["Date"] = self.df['Date'].dt.date
+            self.df = self.df[["Category","Description","Link","Date","Source"]]
 
 
         except:
@@ -227,7 +227,7 @@ class Scraper(object):
 
         try:
             logging.info("Restricting IFSQN by date")
-            self.df = self.df[self.df["date"] > self.min_date]
+            self.df = self.df[self.df["Date"] > self.min_date]
 
         except:
             logging.warning("Could not apply date restriction on IFSQN")
@@ -275,10 +275,10 @@ class Scraper(object):
             try:
                 cat = self.category_finder(self.desc)
             except:
-                logging.warning("Could not find a category for site: %s url: %s \n desc: %s" % ("FSANZ", url, self.desc))
+                logging.warning("Could not find a Category for site: %s url: %s \n desc: %s" % ("FSANZ", url, self.desc))
 
             try:
-                self.dicts = {"category": cat, "description": self.desc, "link": self.link, "date" :  self.date, "site_type": "FSANZ"}
+                self.dicts = {"Category": cat, "Description": self.desc, "Link": self.link, "Date" :  self.date, "Source": "FSANZ"}
                 self.dl.append(self.dicts)
             except:
                 continue

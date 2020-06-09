@@ -34,7 +34,7 @@ class FrontEnd(object):
         self.window.wm_title("Food News")
 
         self.all_var = BooleanVar(value=0)
-        self.df = pd.DataFrame(columns=["category","description","link","date","site_type"])
+        self.df = pd.DataFrame(columns=["Category","Description","Link","Date","Source"])
 
         self.buttons()
 
@@ -88,7 +88,7 @@ class FrontEnd(object):
         self.cat_text = ttk.Label(self.window, width = 10, text = "Category:")
         self.cat_text.grid(row=6,column=0,rowspan=1,columnspan=1,pady=5,sticky=W)
 
-        #list for category drop down
+        #list for Category drop down
         self.option_list = [
         "News"
         , "Alert"
@@ -166,7 +166,7 @@ class FrontEnd(object):
             , command = self.generate_SQL).grid(row=3,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #output window
-        self.tree["columns"] = ["category","description","link","date","site_type"]
+        self.tree["columns"] = ["Category","Description","Link","Date","Source"]
         self.tree.grid(row=15,column=1,rowspan=1,columnspan=12,sticky=W,pady=10)
         self.tree.column("#0", width=50)
         self.tree.column("#1", width=75)
@@ -299,7 +299,7 @@ class FrontEnd(object):
                         ,date_div = "em"
                         ,date_class = "emp"
                         ,url = ["https://www.fsai.ie/news_centre/food_alerts.html","https://www.fsai.ie/news_centre/allergen_alerts.html"]
-                        ,site_type = "FSAI"
+                        ,Source = "FSAI"
                         ,date_formatter = "%A, %d %B %Y"
                         ))
                     self.status_text["text"] = "Finished FSAI!"
@@ -317,7 +317,7 @@ class FrontEnd(object):
                         ,date_div = "span"
                         ,date_class = "field field__created"
                         ,url = ["https://www.food.gov.uk/news-alerts/search/alerts"]
-                        ,site_type = "UK FSA"
+                        ,Source = "UK FSA"
                         ,date_formatter = "%d %B %Y"
                         ))
                     self.status_text["text"] = "Finished UK FSA!"
@@ -336,7 +336,7 @@ class FrontEnd(object):
                         ,date_div = "div"
                         ,date_class = "news-release-date"
                         ,url = ["https://www.usda.gov/media/press-releases"]
-                        ,site_type = "USDA"
+                        ,Source = "USDA"
                         ,date_formatter = "%b %d, %Y"
                         ))
                     self.status_text["text"] = "Finished UK FSA!"
@@ -354,7 +354,7 @@ class FrontEnd(object):
                         ,desc_class = "media-heading"
                         ,date_div = "h5"
                         ,url = ["https://www.ifs-certification.com/index.php/en/news"]
-                        ,site_type = "IFS"
+                        ,Source = "IFS"
                         ,date_formatter = "%d %B %Y"
                         ))
                     self.status_text["text"] = "Finished IFS!"
@@ -373,7 +373,7 @@ class FrontEnd(object):
                         ,desc_class = "news-item__title"
                         ,date_div = "time"
                         ,url = ["https://www.fssc22000.com/news/"]
-                        ,site_type = "FSSC 22000"
+                        ,Source = "FSSC 22000"
                         ,date_formatter = "%d %B %Y"
                         ))
                     self.status_text["text"] ="Finished FSSC!"
@@ -393,7 +393,7 @@ class FrontEnd(object):
                         ,date_div = "span"
                         ,date_class = "av-masonry-date meta-color updated"
                         ,url = ["https://safefood360.com/blog/"]
-                        ,site_type = "SF360"
+                        ,Source = "SF360"
                         ,date_formatter = "%B %d, %Y"
                         ))
                     self.status_text["text"] = "Finished SF360!"
@@ -421,7 +421,7 @@ class FrontEnd(object):
                         ,date_div = "span"
                         ,date_class = "date-display-single"
                         ,url = ["http://www.efsa.europa.eu/en/news"]
-                        ,site_type = "EFSA"
+                        ,Source = "EFSA"
                         ,date_formatter = "%d %B %Y"
                         ))
                     self.status_text["text"] = "Finished EFSA!"
@@ -440,7 +440,7 @@ class FrontEnd(object):
                         ,date_div = "div"
                         ,date_class = "list-date"
                         ,url = ["http://www.fao.org/news/archive/news-by-date/2020/en/"]
-                        ,site_type = "UN FAO"
+                        ,Source = "UN FAO"
                         ,date_formatter = "%d-%m-%Y"
                         ))
                     self.status_text["text"] = "Finished UN FAO!"
@@ -459,7 +459,7 @@ class FrontEnd(object):
                         ,url = ["https://www.inspection.gc.ca/about-cfia/newsroom/food-recall-warnings/eng/1299076382077/1299076493846"]
                         ,loop_begin = 1
                         ,desc_int = 1
-                        ,site_type = "CFIA"
+                        ,Source = "CFIA"
                         ,date_formatter = "%Y-%m-%d"
                         ))
                     self.status_text["text"] = "Finished CFIA!"
@@ -478,7 +478,7 @@ class FrontEnd(object):
                         ,date_div = "div"
                         ,date_class = "post-date"
                         ,url = ["https://mygfsi.com/news-and-resources/?type=news_updates"]
-                        ,site_type = "GFSI"
+                        ,Source = "GFSI"
                         ,date_formatter = "%d %B %Y"
                         ))
                     self.status_text["text"] = "Finished GFSI!"
@@ -497,7 +497,7 @@ class FrontEnd(object):
                         ,loop_begin = 1
                         ,date_int = 1
                         ,url = ["https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-rules-guidance-industry"]
-                        ,site_type = "FDA FSMA"
+                        ,Source = "FDA FSMA"
                         ,date_formatter = "%Y/%m"
                         ))
                     self.status_text["text"] = "Finished FDA FSMA!"
@@ -516,7 +516,7 @@ class FrontEnd(object):
                         ,date_div = "span"
                         ,date_class = "timestamp"
                         ,url = ["https://www.who.int/news-room/releases", "https://www.who.int/news-room/releases/2"]
-                        ,site_type = "WHO"
+                        ,Source = "WHO"
                         ,date_formatter = "%d %B %Y"
                         ))
                     self.status_text["text"] = "Finished WHO!"
@@ -530,7 +530,7 @@ class FrontEnd(object):
                     logging.info("Creating DataFrame")
                     self.df = pd.concat(self.data_list)
                     self.df = self.df.reset_index(drop=True).drop_duplicates(subset=None, keep="first", inplace=False)
-                    self.df["description"] = self.df["description"].str.capitalize()
+                    self.df["Description"] = self.df["Description"].str.capitalize()
                     self.df_to_list(self.df)
 
                 except:
@@ -548,7 +548,7 @@ class FrontEnd(object):
         self.save_file(str(self.df),".txt")
 
     def reset(self):
-        self.df = pd.DataFrame(columns=["category","description","link","date","site_type"])
+        self.df = pd.DataFrame(columns=["Category","Description","Link","Date","Source"])
         self.tree.delete(*self.tree.get_children())
         #self.buttons()
 
@@ -585,7 +585,7 @@ class FrontEnd(object):
         self.source_variable.set(item["values"][4])
 
     def add_value_to_df(self):
-        self.df = self.df.append({"category": self.category_text.get(), "date" : self.date_picker.get_date(), "description": self.desc_tb.get(), "link": self.url_tb.get(), "site_type": self.source_variable.get()}
+        self.df = self.df.append({"Category": self.category_text.get(), "Date" : self.date_picker.get_date(), "Description": self.desc_tb.get(), "Link": self.url_tb.get(), "Source": self.source_variable.get()}
             , ignore_index=True)
         self.df_to_list(self.df)
 
