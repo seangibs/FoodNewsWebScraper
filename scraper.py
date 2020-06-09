@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 
 
@@ -94,9 +94,11 @@ class Scraper(object):
                     continue
 
                 if self.date < self.min_date:
-                    logging.info("Date Skipped: %s",self.date)
+                    logging.debug("Date Skipped: %s",self.date)
                     continue
+                print(u)
 
+                print(self.link)
                 self.dicts = {"category": cat, "description": self.desc, "link": self.url_corrector(u, self.link), "date" : self.date, "site_type": site_type}
 
                 self.dict_list.append(self.dicts)
@@ -289,7 +291,6 @@ class Scraper(object):
 
 
         logging.info("FSANZ data retrieved")
-        print(self.df)
         return(self.df)
 
     def dateformatter(self, df, date_formatter):
@@ -303,7 +304,9 @@ class Scraper(object):
                 return(cat[i])
         return "News"
 
-    def url_corrector(self,url, partial_url):
+    def url_corrector(self, url, partial_url):
+        if partial_url[:len(url)] != url:
+            return url
         self.url_end = [".com",".gov",".ie",".uk",".eu",".org",".ca",".int"]
         self.st = []
         for u in self.url_end:

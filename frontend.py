@@ -5,6 +5,9 @@ from scraper import *
 import pandas as pd
 from functools import partial
 from datetime import date, timedelta
+import threading
+import time
+
 
 class FrontEnd(object):
 
@@ -12,9 +15,19 @@ class FrontEnd(object):
 
         self.window = Tk()
 
+        window_height = 648
+        window_width = 1050
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+
+        x_cordinate = int((screen_width/2) - (window_width/2))
+        y_cordinate = int((screen_height/2) - (window_height/2))
+
+        style = ttk.Style(self.window)
+        style.configure('Treeview', rowheight=31)
         self.tree = ttk.Treeview(self.window)
 
-        self.window.geometry("1050x500")
+        self.window.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
         self.window.iconbitmap(self, default = "logo.ico")
         self.window.wm_title("Food News")
@@ -57,8 +70,8 @@ class FrontEnd(object):
         self.source_dict = dict(zip(self.source_list,self.source_var))
 
 
-        self.min_date_text = ttk.Label(self.window, width = 10, text = "",anchor=E)
-        self.min_date_text.grid(row=5,column=12,rowspan=1,columnspan=1,sticky=W)
+        ttk.Label(self.window, width = 10, text = "",anchor=E).grid(row=5,column=12,rowspan=1,columnspan=1,sticky=W,pady=20)
+
 
         #Date
         self.min_date_text = ttk.Label(self.window, width = 10, text = "Last Date",anchor=W)
@@ -95,7 +108,6 @@ class FrontEnd(object):
         self.date_picker.grid(row=6,column=3,rowspan=1,columnspan=2,sticky=W)
 
         #Sources
-
         self.source_text = ttk.Label(self.window, width = 8, text = "Source:")
         self.source_text.grid(row=6,column=4,rowspan=1,columnspan=1,pady=5,sticky=E)
         self.source_variable = StringVar(self.window)
@@ -123,8 +135,10 @@ class FrontEnd(object):
         """Buttons to interact with the backend"""
 
         #Generate all news sources selected
-        ttk.Button(self.window, width = 12, text = "View All"
-            , command = self.view_command).grid(row=0,column=6,rowspan=1,columnspan=1,sticky=W)
+        self.view_button = ttk.Button(self.window, width = 12, text = "View All"
+            , command = self.view_thread)
+
+        self.view_button.grid(row=0,column=6,rowspan=1,columnspan=1,sticky=W)
 
         #Send the entered data from enter_data to the backend
         ttk.Button(self.window, width = 12, text = "Add"
@@ -161,6 +175,52 @@ class FrontEnd(object):
         self.tree.column("#5", width=75)
         self.tree.bind("<<TreeviewSelect>>", self.populate_selection)
 
+    def view_thread(self):
+
+        self.view_button.config(state=DISABLED)
+        self.t1 = threading.Thread(target=self.view_command)
+        self.t1.setDaemon(True)
+        self.t1.start()
+        self.pop_up()
+        # while t1:
+        #     print("terst")
+
+    def pop_up(self):
+        self.win=Tk()
+
+        window_height = 185
+        window_width = 300
+        screen_width = self.win.winfo_screenwidth()
+        screen_height = self.win.winfo_screenheight()
+        self.win.wm_title("Loading...")
+        x_cordinate = int((screen_width/2) - (window_width/2))
+        y_cordinate = int((screen_height/2) - (window_height/2))
+
+        self.win.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+
+        #self.progress=ttk.Progressbar(self.win,orient=HORIZONTAL,length=100,mode='determinate')
+        #self.progress.pack()
+
+        self.status_text = ttk.Label(self.win, text = "Initializing...")
+        self.status_text.config(font=("Courier", 15))
+        self.status_text.pack()
+
+        self.ascii_status = ttk.Label(self.win, text = "Initializing...")
+        self.ascii_status.config(font=("Courier", 20))
+        self.ascii_status.pack()
+
+        #screen_text = "Loading data for: " + ", ".join([name for name, val in self.source_dict.items() if val.get() == True])
+
+        #ttk.Label(self.win, text = screen_text).pack()
+
+        self.win.mainloop()
+
+
+    def close_pop_up(self):
+
+        self.view_button.config(state=NORMAL)
+        self.win.destroy()
+
     def view_command(self):
 
         self.scraper = Scraper(self.min_date_picker.get_date())
@@ -172,17 +232,34 @@ class FrontEnd(object):
             if v.get():
 
                 if self.source_dict.get("EC RASFF").get() == True:
+                    self.status_text["text"] = "Loading EC RASFF..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.ecrasff())
+                    self.status_text["text"] = "Loading EC RASFF"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("IFSQN").get() == True:
+                    self.status_text["text"] = "Loading IFSQN..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.ifsqn( #IFSQN
                         ))
+                    self.status_text["text"] = "Finished IFSQN!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("FDA").get() == True:
+                    self.status_text["text"] = "Loading IFSQN..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.fda( #FDA FSMA
                         ))
+                    self.status_text["text"] = "Finished FDA!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("FSAI").get() == True:
+                    self.status_text["text"] = "Loading FSAI..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #FSAI
                         class_page = "news-listing"
                         ,desc_div = "p"
@@ -193,8 +270,13 @@ class FrontEnd(object):
                         ,site_type = "FSAI"
                         ,date_formatter = "%A, %d %B %Y"
                         ))
+                    self.status_text["text"] = "Finished FSAI!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("UK FSA").get() == True:
+                    self.status_text["text"] = "Loading UK FSA..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #UK FSA
                         class_page = "views-row"
                         ,desc_div = "p"
@@ -204,8 +286,13 @@ class FrontEnd(object):
                         ,site_type = "UK FSA"
                         ,date_formatter = "%d %B %Y"
                         ))
+                    self.status_text["text"] = "Finished UK FSA!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("USDA").get() == True:
+                    self.status_text["text"] = "Loading USDA..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #USDA
                         page_div = "li"
                         ,class_page = "news-releases-item"
@@ -216,8 +303,13 @@ class FrontEnd(object):
                         ,site_type = "USDA"
                         ,date_formatter = "%b %d, %Y"
                         ))
+                    self.status_text["text"] = "Finished UK FSA!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("IFS").get() == True:
+                    self.status_text["text"] = "Loading IFS..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #IFS
                         class_page = "well"
                         ,desc_div = "h4"
@@ -227,8 +319,13 @@ class FrontEnd(object):
                         ,site_type = "IFS"
                         ,date_formatter = "%d %B %Y"
                         ))
+                    self.status_text["text"] = "Finished IFS!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("FSSC").get() == True:
+                    self.status_text["text"] = "Loading FSSC..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #FSSC 22000
                         page_div = "a"
                         ,class_page = "news-item news-item-archive"
@@ -239,8 +336,13 @@ class FrontEnd(object):
                         ,site_type = "FSSC 22000"
                         ,date_formatter = "%d %B %Y"
                         ))
+                    self.status_text["text"] ="Finished FSSC!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("SF360").get() == True:
+                    self.status_text["text"] = "Loading SF360..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #SF360
                         page_div = "a"
                         ,class_page = "^av-masonry-entry"
@@ -252,11 +354,20 @@ class FrontEnd(object):
                         ,site_type = "SF360"
                         ,date_formatter = "%B %d, %Y"
                         ))
+                    self.status_text["text"] = "Finished SF360!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("FSANZ").get() == True:
+                    self.status_text["text"] = "Loading FSANZ..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.fsanzdf("%d/%m/%Y"))
+                    self.status_text["text"] = "Finished FSANZ!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
 
                 if self.source_dict.get("EFSA").get() == True:
+                    self.status_text["text"] = "Loading EFSA..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #EFSA
                         class_page = "^views-row views-row-"
                         ,desc_div = "span"
@@ -267,8 +378,13 @@ class FrontEnd(object):
                         ,site_type = "EFSA"
                         ,date_formatter = "%d %B %Y"
                         ))
+                    self.status_text["text"] = "Finished EFSA!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("UN FAO").get() == True:
+                    self.status_text["text"] = "Loading UN FAO..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #FAO
                         class_page = "^tx-dynalist-pi1-recordlist tx-dynalist-pi1-recordlist-"
                         ,desc_div = "div"
@@ -279,8 +395,13 @@ class FrontEnd(object):
                         ,site_type = "UN FAO"
                         ,date_formatter = "%d-%m-%Y"
                         ))
+                    self.status_text["text"] = "Finished UN FAO!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("CFIA").get() == True:
+                    self.status_text["text"] = "Loading CFIA.."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #CFIA
                         page_div="tr"
                         ,desc_div="td"
@@ -291,8 +412,13 @@ class FrontEnd(object):
                         ,site_type = "CFIA"
                         ,date_formatter = "%Y-%m-%d"
                         ))
+                    self.status_text["text"] = "Finished CFIA!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("GFSI").get() == True:
+                    self.status_text["text"] = "Loading GFSI..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #GFSI
                         class_page = "grid-body"
                         ,desc_div = "div"
@@ -303,8 +429,13 @@ class FrontEnd(object):
                         ,site_type = "GFSI"
                         ,date_formatter = "%d %B %Y"
                         ))
+                    self.status_text["text"] = "Finished GFSI!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("FDA FSMA").get() == True:
+                    self.status_text["text"] = "Loading FDA FSMA..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #FDA FSMA
                         page_div = "tr"
                         ,desc_div = "a"
@@ -315,8 +446,13 @@ class FrontEnd(object):
                         ,site_type = "FDA FSMA"
                         ,date_formatter = "%Y/%m"
                         ))
+                    self.status_text["text"] = "Finished FDA FSMA!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
                 if self.source_dict.get("WHO").get() == True:
+                    self.status_text["text"] = "Loading WHO..."
+                    self.ascii_status["text"] = "♒((⇀‸↼))♒"
                     self.data_list.append(self.scraper.convert( #WHO
                         class_page = "list-view--item vertical-list-item"
                         ,desc_div = "p"
@@ -327,6 +463,9 @@ class FrontEnd(object):
                         ,site_type = "WHO"
                         ,date_formatter = "%d %B %Y"
                         ))
+                    self.status_text["text"] = "Finished WHO!"
+                    self.ascii_status["text"] = "＼(＾O＾)／"
+                    time.sleep(0.5)
 
 
                 try:
@@ -339,12 +478,13 @@ class FrontEnd(object):
                 except:
                     logging.warning("Could not create dataframe")
 
+                self.close_pop_up()
                 return
 
 
         logging.info("No option selected")
+        self.close_pop_up()
         return
-
 
     def generate_csv(self):
         self.save_file(str(self.df),".txt")
