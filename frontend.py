@@ -15,6 +15,7 @@ class FrontEnd(object):
 
         self.window = Tk()
 
+
         window_height = 648
         window_width = 1050
         screen_width = self.window.winfo_screenwidth()
@@ -198,19 +199,43 @@ class FrontEnd(object):
 
         self.win.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
-        #self.progress=ttk.Progressbar(self.win,orient=HORIZONTAL,length=100,mode='determinate')
-        #self.progress.pack()
 
         self.status_text = ttk.Label(self.win, text = "Initializing...")
-        self.status_text.config(font=("Courier", 15))
+        self.status_text.config(font=("Arial", 15))
         self.status_text.pack()
 
+
+        space_label = ttk.Label(self.win, text = "")
+        space_label.config(font=("Arial", 15))
+        #space_label.config(bg="#3a8cae")
+        space_label.pack()
+
         self.ascii_status = ttk.Label(self.win, text = "Initializing...")
-        self.ascii_status.config(font=("Courier", 20))
+        self.ascii_status.config(font=("Arial", 20))
         self.ascii_status.pack()
 
-        #screen_text = "Loading data for: " + ", ".join([name for name, val in self.source_dict.items() if val.get() == True])
+        blank_text = ttk.Label(self.win, text = "")
+        blank_text.config(font=("Arial", 15))
+        blank_text.pack()
 
+        s = ttk.Style(self.win)
+        s.theme_use('winnative')
+        s.configure("red.Horizontal.TProgressbar", troughcolor ='#606a71', background='#559363')
+        #s.configure(bg="red")
+
+        self.progress=ttk.Progressbar(self.win,orient=HORIZONTAL,length=250,mode='determinate',style="red.Horizontal.TProgressbar")
+        #self.progress.configure(background="red")
+        self.progress.pack()
+
+        #screen_text = "Loading data for: " + ", ".join([name for name, val in self.source_dict.items() if val.get() == True])
+        self.num_selected = 0
+        for name, val in self.source_dict.items():
+            if val.get() == True:
+                self.num_selected += 1
+                if self.num_selected == 16:
+                    break   #only 16 currently work as of 09/06 so will have to update this in the future
+
+        #print(self.num_selected)
         #ttk.Label(self.win, text = screen_text).pack()
 
         self.win.mainloop()
@@ -226,6 +251,7 @@ class FrontEnd(object):
         self.scraper = Scraper(self.min_date_picker.get_date())
 
         self.data_list = []
+        current_progress = 0
 
         for v in self.source_var:
 
@@ -237,6 +263,8 @@ class FrontEnd(object):
                     self.data_list.append(self.scraper.ecrasff())
                     self.status_text["text"] = "Loading EC RASFF"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("IFSQN").get() == True:
@@ -246,6 +274,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished IFSQN!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("FDA").get() == True:
@@ -255,6 +285,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished FDA!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("FSAI").get() == True:
@@ -272,6 +304,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished FSAI!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("UK FSA").get() == True:
@@ -288,6 +322,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished UK FSA!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("USDA").get() == True:
@@ -305,6 +341,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished UK FSA!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("IFS").get() == True:
@@ -321,6 +359,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished IFS!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("FSSC").get() == True:
@@ -338,6 +378,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] ="Finished FSSC!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("SF360").get() == True:
@@ -356,6 +398,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished SF360!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("FSANZ").get() == True:
@@ -364,6 +408,8 @@ class FrontEnd(object):
                     self.data_list.append(self.scraper.fsanzdf("%d/%m/%Y"))
                     self.status_text["text"] = "Finished FSANZ!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
 
                 if self.source_dict.get("EFSA").get() == True:
                     self.status_text["text"] = "Loading EFSA..."
@@ -380,6 +426,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished EFSA!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("UN FAO").get() == True:
@@ -397,6 +445,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished UN FAO!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("CFIA").get() == True:
@@ -414,6 +464,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished CFIA!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("GFSI").get() == True:
@@ -431,6 +483,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished GFSI!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("FDA FSMA").get() == True:
@@ -448,6 +502,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished FDA FSMA!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
                 if self.source_dict.get("WHO").get() == True:
@@ -465,6 +521,8 @@ class FrontEnd(object):
                         ))
                     self.status_text["text"] = "Finished WHO!"
                     self.ascii_status["text"] = "＼(＾O＾)／"
+                    current_progress = current_progress + (100 / self.num_selected)
+                    self.progress["value"] = current_progress
                     time.sleep(0.5)
 
 
