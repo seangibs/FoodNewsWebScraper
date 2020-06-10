@@ -7,6 +7,7 @@ from functools import partial
 from datetime import date, timedelta
 import threading
 import time
+from PIL import Image, ImageTk
 
 
 class FrontEnd(object):
@@ -134,36 +135,65 @@ class FrontEnd(object):
 
 
         """Buttons to interact with the backend"""
-
+        width = 12
+        height = 12
+        img = Image.open("view.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.view_img =  ImageTk.PhotoImage(img)
         #Generate all news sources selected
-        self.view_button = ttk.Button(self.window, width = 12, text = "View All"
+        self.view_button = ttk.Button(self.window, width = 12, text = " View All", image = self.view_img, compound="left"
             , command = self.view_thread)
 
         self.view_button.grid(row=0,column=6,rowspan=1,columnspan=1,sticky=W)
 
         #Send the entered data from enter_data to the backend
-        ttk.Button(self.window, width = 12, text = "Add"
+
+        img = Image.open("add.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.add_img =  ImageTk.PhotoImage(img)
+        ttk.Button(self.window, width = 12, text = " Add     ", image = self.add_img, compound=LEFT
             , command = self.add_value_to_df).grid(row=1,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        ttk.Button(self.window, width = 12, text = "Delete"
+        img = Image.open("delete.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.delete_img =  ImageTk.PhotoImage(img)
+        ttk.Button(self.window, width = 12, text = " Delete  ", image = self.delete_img, compound=LEFT
             , command = self.delete_row).grid(row=3,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        ttk.Button(self.window, width = 12, text = "Update"
+        img = Image.open("update.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.update_img =  ImageTk.PhotoImage(img)
+        ttk.Button(self.window, width = 12, text = " Update  ", image = self.update_img, compound=LEFT
             , command = self.update_row).grid(row=2,column=6,rowspan=1,columnspan=1,sticky=W)
 
         #Clear window and dataframe
-        ttk.Button(self.window, width = 12, text = "Reset"
+        img = Image.open("reset.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.reset_img =  ImageTk.PhotoImage(img)
+        ttk.Button(self.window, width = 12, text = " Reset     ", image = self.reset_img, compound=LEFT
             , command = self.reset).grid(row=0,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #Export to CSV
-        ttk.Button(self.window, width = 12, text = "CSV Export"
+        img = Image.open("csv.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.csv_img =  ImageTk.PhotoImage(img)
+        ttk.Button(self.window, width = 12, text = " CSV Export", image = self.csv_img, compound=LEFT
             , command = self.generate_csv).grid(row=1,column=7,rowspan=1,columnspan=1,sticky=W)
 
-        ttk.Button(self.window, width = 12, text = "SQL"
+        #SQL Export
+        img = Image.open("sql.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.sql_img =  ImageTk.PhotoImage(img)
+        ttk.Button(self.window, width = 12, text = " SQL       ", image = self.sql_img, compound=LEFT
             , command = self.generate_SQL).grid(row=2,column=7,rowspan=1,columnspan=1,sticky=W)
 
-        ttk.Button(self.window, width = 12, text = "Email"
-            , command = self.generate_SQL).grid(row=3,column=7,rowspan=1,columnspan=1,sticky=W)
+
+        #Email
+        img = Image.open("email.gif")
+        img = img.resize((width,height), Image.ANTIALIAS)
+        self.email_img =  ImageTk.PhotoImage(img)
+        ttk.Button(self.window, width = 12, text = " Email     ", image = self.email_img, compound=LEFT
+            ).grid(row=3,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #output window
         self.tree["columns"] = ["Category","Description","Link","Date","Source"]
@@ -410,6 +440,7 @@ class FrontEnd(object):
                     self.ascii_status["text"] = "＼(＾O＾)／"
                     current_progress = current_progress + (100 / self.num_selected)
                     self.progress["value"] = current_progress
+                    time.sleep(0.5)
 
                 if self.source_dict.get("EFSA").get() == True:
                     self.status_text["text"] = "Loading EFSA..."
