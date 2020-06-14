@@ -305,9 +305,10 @@ class Scraper(object):
         return "News"
 
     def url_corrector(self, url, partial_url):
-        if partial_url[:len(url)] != url:
-            return url
-        self.url_end = [".com",".gov",".ie",".uk",".eu",".org",".ca",".int"]
+        if partial_url[:4] == "http":
+            return partial_url
+
+        self.url_end = [".com",".gov.uk",".gov",".ie",".uk",".eu",".org",".ca",".int"]
         self.st = []
         for u in self.url_end:
             try:

@@ -1,4 +1,4 @@
-from tkinter import ttk,filedialog
+from tkinter import ttk,filedialog,font
 from tkinter import *
 from tkcalendar import *
 from scraper import *
@@ -8,7 +8,12 @@ from datetime import date, timedelta
 import threading
 import time
 from PIL import Image, ImageTk
-
+import webbrowser
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.multipart import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
 
 class FrontEnd(object):
 
@@ -16,6 +21,11 @@ class FrontEnd(object):
 
         self.window = Tk()
 
+        s1 = ttk.Style(self.window)
+
+        s1.configure('Red.TCheckbutton', font=("Arial", 11))
+
+        s1.configure('my.TButton', font=("Arial", 11, "bold"))
 
         window_height = 648
         window_width = 1050
@@ -31,11 +41,15 @@ class FrontEnd(object):
 
         self.window.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
-        self.window.iconbitmap(self, default = "logo.ico")
-        self.window.wm_title("Food News")
+        self.window.iconbitmap(self, default = "img\\logo.ico")
+        self.window.wm_title("Food News - BETA")
 
         self.all_var = BooleanVar(value=0)
         self.df = pd.DataFrame(columns=["Category","Description","Link","Date","Source"])
+
+        self.from_email = ""
+        self.to_email = ""
+        self.from_pw = ""
 
         self.buttons()
 
@@ -52,7 +66,7 @@ class FrontEnd(object):
         # #The variable for each text button which will be used later in the script to determine which method to call e.g. if self.source_var[i].get() == True: do something
         self.source_var = []
 
-        ttk.Checkbutton(self.window, text = "All", var = self.all_var, command = self.all_select).grid(row=0,column=0,sticky=W)
+        ttk.Checkbutton(self.window, text = "All", var = self.all_var, command = self.all_select,style = "Red.TCheckbutton").grid(row=0,column=0,sticky=W)
 
         j = 0
         k = 1
@@ -61,7 +75,9 @@ class FrontEnd(object):
         for i in range(len(self.source_list)):
             self.var = BooleanVar(value=0)
             self.source_var.append(self.var) #add var to list
-            ttk.Checkbutton(self.window, text = self.source_list[i], var = self.source_var[i]).grid(row=k,column=j,pady=2,columnspan=1,sticky=W)
+            check_but = ttk.Checkbutton(self.window, text = self.source_list[i], var = self.source_var[i],style = "Red.TCheckbutton")
+            check_but.grid(row=k,column=j,pady=2,columnspan=1,sticky=W)
+            #check_but.configure(font=("Arial", 9,"bold"))
             k += 1
             #new column
             if k == 4:
@@ -79,6 +95,9 @@ class FrontEnd(object):
         self.min_date_text = ttk.Label(self.window, width = 10, text = "Last Date",anchor=W)
         self.min_date_text.grid(row=2,column=5,rowspan=1,columnspan=1,sticky=W)
 
+        self.min_date_text.configure(font=("Arial", 10,"bold"))
+
+
         last_day = str(date.today() - timedelta(days=3)).split("-")
         #Enter date
         self.min_date_picker = DateEntry(self.window, date_pattern="DD/MM/YY", year = int(last_day[0]), month = int(last_day[1]), day = int(last_day[2]))
@@ -87,7 +106,9 @@ class FrontEnd(object):
         """Users will enter data here"""
         #Category
         self.cat_text = ttk.Label(self.window, width = 10, text = "Category:")
-        self.cat_text.grid(row=6,column=0,rowspan=1,columnspan=1,pady=5,sticky=W)
+        self.cat_text.grid(row=6,column=0,rowspan=1,columnspan=1,pady=5,sticky=W,padx=(10,1))
+
+        self.cat_text.configure(font=("Arial", 10,"bold"))
 
         #list for Category drop down
         self.option_list = [
@@ -104,6 +125,7 @@ class FrontEnd(object):
         #Date
         self.date_text = ttk.Label(self.window, width = 8, text = "Date:")
         self.date_text.grid(row=6,column=2,rowspan=1,columnspan=1,pady=5,sticky=E)
+        self.date_text.configure(font=("Arial", 10,"bold"))
 
         #Enter date
         self.date_picker = DateEntry(self.window,date_pattern="DD/MM/YY")
@@ -112,6 +134,7 @@ class FrontEnd(object):
         #Sources
         self.source_text = ttk.Label(self.window, width = 8, text = "Source:")
         self.source_text.grid(row=6,column=4,rowspan=1,columnspan=1,pady=5,sticky=E)
+        self.source_text.configure(font=("Arial", 10,"bold"))
         self.source_variable = StringVar(self.window)
 
         self.source_variable.set(self.source_list[0]) # default value
@@ -120,7 +143,8 @@ class FrontEnd(object):
 
         #Description
         self.desc_text = ttk.Label(self.window, width = 15, text = "Description:")
-        self.desc_text.grid(row=8,column=0,rowspan=1,columnspan=1,pady=5,sticky=W)
+        self.desc_text.grid(row=8,column=0,rowspan=1,columnspan=1,pady=5,sticky=W,padx=(10,1))
+        self.desc_text.configure(font=("Arial", 10,"bold"))
 
 
         self.desc_tb = ttk.Entry(self.window, width = 149)
@@ -128,72 +152,73 @@ class FrontEnd(object):
 
         #URL
         self.url_text = ttk.Label(self.window, width = 15, text = "URL:")
-        self.url_text.grid(row=9,column=0,rowspan=1,columnspan=1,pady=5,sticky=W)
+        self.url_text.grid(row=9,column=0,rowspan=1,columnspan=1,padx=(10,1),sticky=W)
+        self.url_text.configure(font=("Arial", 10,"bold"))
 
         self.url_tb = ttk.Entry(self.window,width = 149)
         self.url_tb.grid(row=9,column=1,rowspan=1,columnspan=7,pady=5,sticky=W)
 
 
         """Buttons to interact with the backend"""
-        width = 12
-        height = 12
-        img = Image.open("view.gif")
+        width = 15
+        height = 15
+        img = Image.open("img\\view.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.view_img =  ImageTk.PhotoImage(img)
         #Generate all news sources selected
-        self.view_button = ttk.Button(self.window, width = 12, text = " View All", image = self.view_img, compound="left"
+        self.view_button = ttk.Button(self.window, width = 12, text = "  View All  ", image = self.view_img, compound="left", style='my.TButton'
             , command = self.view_thread)
 
         self.view_button.grid(row=0,column=6,rowspan=1,columnspan=1,sticky=W)
 
         #Send the entered data from enter_data to the backend
 
-        img = Image.open("add.gif")
+        img = Image.open("img\\add.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.add_img =  ImageTk.PhotoImage(img)
-        ttk.Button(self.window, width = 12, text = " Add     ", image = self.add_img, compound=LEFT
+        ttk.Button(self.window, width = 12, text = "   Add        ", image = self.add_img, compound=LEFT, style='my.TButton'
             , command = self.add_value_to_df).grid(row=1,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        img = Image.open("delete.gif")
+        img = Image.open("img\\delete.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.delete_img =  ImageTk.PhotoImage(img)
-        ttk.Button(self.window, width = 12, text = " Delete  ", image = self.delete_img, compound=LEFT
+        ttk.Button(self.window, width = 12, text = "   Delete    ", image = self.delete_img, compound=LEFT, style='my.TButton'
             , command = self.delete_row).grid(row=3,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        img = Image.open("update.gif")
+        img = Image.open("img\\update.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.update_img =  ImageTk.PhotoImage(img)
-        ttk.Button(self.window, width = 12, text = " Update  ", image = self.update_img, compound=LEFT
+        ttk.Button(self.window, width = 12, text = "   Update  ", image = self.update_img, compound=LEFT, style='my.TButton'
             , command = self.update_row).grid(row=2,column=6,rowspan=1,columnspan=1,sticky=W)
 
         #Clear window and dataframe
-        img = Image.open("reset.gif")
+        img = Image.open("img\\reset.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.reset_img =  ImageTk.PhotoImage(img)
-        ttk.Button(self.window, width = 12, text = " Reset     ", image = self.reset_img, compound=LEFT
+        ttk.Button(self.window, width = 12, text = "   Reset     ", image = self.reset_img, compound=LEFT, style='my.TButton'
             , command = self.reset).grid(row=0,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #Export to CSV
-        img = Image.open("csv.gif")
+        img = Image.open("img\\csv.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.csv_img =  ImageTk.PhotoImage(img)
-        ttk.Button(self.window, width = 12, text = " CSV Export", image = self.csv_img, compound=LEFT
+        ttk.Button(self.window, width = 12, text = "   CSV       ", image = self.csv_img, compound=LEFT, style='my.TButton'
             , command = self.generate_csv).grid(row=1,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #SQL Export
-        img = Image.open("sql.gif")
+        img = Image.open("img\\sql.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.sql_img =  ImageTk.PhotoImage(img)
-        ttk.Button(self.window, width = 12, text = " SQL       ", image = self.sql_img, compound=LEFT
+        ttk.Button(self.window, width = 12, text = "   SQL       ", image = self.sql_img, compound=LEFT, style='my.TButton'
             , command = self.generate_SQL).grid(row=2,column=7,rowspan=1,columnspan=1,sticky=W)
 
 
         #Email
-        img = Image.open("email.gif")
+        img = Image.open("img\\emailim.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.email_img =  ImageTk.PhotoImage(img)
-        ttk.Button(self.window, width = 12, text = " Email     ", image = self.email_img, compound=LEFT
-            ).grid(row=3,column=7,rowspan=1,columnspan=1,sticky=W)
+        ttk.Button(self.window, width = 12, text = "   Email     ", image = self.email_img, compound=LEFT, style='my.TButton'
+            , command = self.send_email).grid(row=3,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #output window
         self.tree["columns"] = ["Category","Description","Link","Date","Source"]
@@ -269,7 +294,6 @@ class FrontEnd(object):
         #ttk.Label(self.win, text = screen_text).pack()
 
         self.win.mainloop()
-
 
     def close_pop_up(self):
 
@@ -609,6 +633,11 @@ class FrontEnd(object):
 
         self.url_tb.delete(0,END)
         self.url_tb.insert(0,item["values"][2])
+        self.url_text.bind("<Button-1>", lambda e:  webbrowser.open_new(item["values"][2]))
+        self.url_text.configure(font=("Arial", 9))
+        self.url_text.configure(underline = True)
+        self.url_text.configure(foreground="#3a8cae")
+
 
         #date
         self.date_picker.set_date(datetime.strptime(item["values"][3], '%Y-%m-%d').date())
@@ -700,11 +729,12 @@ class FrontEnd(object):
                 for item in file_to_save:
                     file.write(item)
                     file.write("\n")
+                self.sql_path = file.name
                 file.close()
 
             else:
                 self.df.to_csv(file, index=False)
-
+                self.csv_path = file.name
 
     def check_submit_thread(self):
         if self.submit_thread.is_alive():
@@ -712,6 +742,35 @@ class FrontEnd(object):
         else:
             self.progress.stop()
 
+    def send_email(self):
+        msg = MIMEMultipart()
+        msg['Subject'] = "SF360 :: Task :: Dashboard Updates"
+        msg['From'] = self.from_email
+        msg['To'] = self.to_email
+        msg_text = "Hi Support,\n\nCan you please complete the dashboard updates as per the attached files?\n\nThank you,\nFood News App \n\nThis task of Dashboard Updates has been assigned a SOC 2 risk of minor as per the document: https://go.safefood360.com/MasterData/DocumentControl/ViewDocument/4da849b1-db55-4558-9022-ab7200b32ccc"
+
+        attachment_path_list = [self.csv_path,self.sql_path]
+
+        for each_file_path in attachment_path_list:
+            #try:
+            file_name=each_file_path.split("/")[-1]
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(open(each_file_path, "rb").read())
+
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", "attachment" ,filename=file_name)
+            msg.attach(part)
+            #except:
+                #print("could not attache file")
+
+        msg.attach(MIMEText(msg_text))
+
+        mailserver = smtplib.SMTP('smtp.office365.com',587)
+        mailserver.ehlo()
+        mailserver.starttls()
+        mailserver.login(self.from_email,self.from_pw)
+        mailserver.sendmail(msg['From'],msg['To'],msg.as_string())
+        mailserver.quit()
 
 
 if __name__ == "__main__":
