@@ -41,7 +41,7 @@ class FrontEnd(object):
 
         self.window.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
-        self.window.iconbitmap(self, default = "img\\logo.ico")
+        self.window.iconbitmap(self, default = "C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\logo.ico")
         self.window.wm_title("Food News - BETA")
 
         self.all_var = BooleanVar(value=0)
@@ -162,7 +162,7 @@ class FrontEnd(object):
         """Buttons to interact with the backend"""
         width = 15
         height = 15
-        img = Image.open("img\\view.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\view.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.view_img =  ImageTk.PhotoImage(img)
         #Generate all news sources selected
@@ -173,40 +173,40 @@ class FrontEnd(object):
 
         #Send the entered data from enter_data to the backend
 
-        img = Image.open("img\\add.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\add.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.add_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Add        ", image = self.add_img, compound=LEFT, style='my.TButton'
             , command = self.add_value_to_df).grid(row=1,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        img = Image.open("img\\delete.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\delete.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.delete_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Delete    ", image = self.delete_img, compound=LEFT, style='my.TButton'
             , command = self.delete_row).grid(row=3,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        img = Image.open("img\\update.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\update.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.update_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Update  ", image = self.update_img, compound=LEFT, style='my.TButton'
             , command = self.update_row).grid(row=2,column=6,rowspan=1,columnspan=1,sticky=W)
 
         #Clear window and dataframe
-        img = Image.open("img\\reset.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\reset.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.reset_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Reset     ", image = self.reset_img, compound=LEFT, style='my.TButton'
             , command = self.reset).grid(row=0,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #Export to CSV
-        img = Image.open("img\\csv.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\csv.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.csv_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   CSV       ", image = self.csv_img, compound=LEFT, style='my.TButton'
             , command = self.generate_csv).grid(row=1,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #SQL Export
-        img = Image.open("img\\sql.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\sql.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.sql_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   SQL       ", image = self.sql_img, compound=LEFT, style='my.TButton'
@@ -214,7 +214,7 @@ class FrontEnd(object):
 
 
         #Email
-        img = Image.open("img\\emailim.gif")
+        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\emailim.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.email_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Email     ", image = self.email_img, compound=LEFT, style='my.TButton'
@@ -238,22 +238,29 @@ class FrontEnd(object):
         self.t1.setDaemon(True)
         self.t1.start()
         self.pop_up()
-        # while t1:
-        #     print("terst")
 
-    def pop_up(self):
+    def new_window(self):
         self.win=Tk()
 
         window_height = 185
         window_width = 300
         screen_width = self.win.winfo_screenwidth()
         screen_height = self.win.winfo_screenheight()
-        self.win.wm_title("Loading...")
         x_cordinate = int((screen_width/2) - (window_width/2))
         y_cordinate = int((screen_height/2) - (window_height/2))
 
+        self.win.wm_title("Submit News")
+
+        s = ttk.Style(self.win)
+        s.configure('my.TButton', font=("Arial", 11, "bold"))
+
         self.win.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
+    def pop_up(self):
+
+        self.new_window()
+
+        self.win.wm_title("Loading...")
 
         self.status_text = ttk.Label(self.win, text = "Initializing...")
         self.status_text.config(font=("Arial", 15))
@@ -262,7 +269,6 @@ class FrontEnd(object):
 
         space_label = ttk.Label(self.win, text = "")
         space_label.config(font=("Arial", 15))
-        #space_label.config(bg="#3a8cae")
         space_label.pack()
 
         self.ascii_status = ttk.Label(self.win, text = "Initializing...")
@@ -290,10 +296,67 @@ class FrontEnd(object):
                 if self.num_selected == 16:
                     break   #only 16 currently work as of 09/06 so will have to update this in the future
 
-        #print(self.num_selected)
-        #ttk.Label(self.win, text = screen_text).pack()
 
         self.win.mainloop()
+
+    def send_email(self):
+
+        self.new_window()
+
+
+        msg = MIMEMultipart()
+        msg['Subject'] = "SF360 :: Task :: Dashboard Updates"
+        msg['From'] = self.from_email
+        msg['To'] = self.to_email
+        msg_text = "Hi Support,\n\nCan you please complete the dashboard updates as per the attached files?\n\nThank you,\nFood News App \n\nThis task of Dashboard Updates has been assigned a SOC 2 risk of minor as per the document: https://go.safefood360.com/MasterData/DocumentControl/ViewDocument/4da849b1-db55-4558-9022-ab7200b32ccc"
+
+        try:
+            attachment_path_list = [self.csv_path,self.sql_path]
+            status_text = "Email Sent"
+
+        except:
+            status_text = "Please save both\nCSV & SQL files"
+
+        if status_text == "Email Sent":
+
+            for each_file_path in attachment_path_list:
+                #try:
+                file_name=each_file_path.split("/")[-1]
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(open(each_file_path, "rb").read())
+
+                encoders.encode_base64(part)
+                part.add_header("Content-Disposition", "attachment" ,filename=file_name)
+                msg.attach(part)
+                #except:
+                    #print("could not attache file")
+
+            msg.attach(MIMEText(msg_text))
+
+            try:
+                mailserver = smtplib.SMTP('smtp.office365.com',587)
+                mailserver.ehlo()
+                mailserver.starttls()
+                mailserver.login(self.from_email,self.from_pw)
+                mailserver.sendmail(msg['From'],msg['To'],msg.as_string())
+
+                mailserver.quit()
+
+            except:
+                status_text == "Failed to send email"
+
+        space_label = ttk.Label(self.win, text = "")
+        space_label.config(font=("Arial", 10))
+        space_label.pack()
+        self.status_text = ttk.Label(self.win, text = status_text, anchor=N)
+        self.status_text.config(font=("Arial", 12))
+        self.status_text.pack()
+        space_label = ttk.Label(self.win, text = "")
+        space_label.config(font=("Arial", 15))
+        space_label.pack()
+        self.close_button = ttk.Button(self.win, text = "Ok", command = self.close_pop_up, width = 12, style='my.TButton')
+        self.close_button.pack()
+
 
     def close_pop_up(self):
 
@@ -741,36 +804,6 @@ class FrontEnd(object):
             self.window.after(20, self.check_submit_thread)
         else:
             self.progress.stop()
-
-    def send_email(self):
-        msg = MIMEMultipart()
-        msg['Subject'] = "SF360 :: Task :: Dashboard Updates"
-        msg['From'] = self.from_email
-        msg['To'] = self.to_email
-        msg_text = "Hi Support,\n\nCan you please complete the dashboard updates as per the attached files?\n\nThank you,\nFood News App \n\nThis task of Dashboard Updates has been assigned a SOC 2 risk of minor as per the document: https://go.safefood360.com/MasterData/DocumentControl/ViewDocument/4da849b1-db55-4558-9022-ab7200b32ccc"
-
-        attachment_path_list = [self.csv_path,self.sql_path]
-
-        for each_file_path in attachment_path_list:
-            #try:
-            file_name=each_file_path.split("/")[-1]
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(open(each_file_path, "rb").read())
-
-            encoders.encode_base64(part)
-            part.add_header("Content-Disposition", "attachment" ,filename=file_name)
-            msg.attach(part)
-            #except:
-                #print("could not attache file")
-
-        msg.attach(MIMEText(msg_text))
-
-        mailserver = smtplib.SMTP('smtp.office365.com',587)
-        mailserver.ehlo()
-        mailserver.starttls()
-        mailserver.login(self.from_email,self.from_pw)
-        mailserver.sendmail(msg['From'],msg['To'],msg.as_string())
-        mailserver.quit()
 
 
 if __name__ == "__main__":
