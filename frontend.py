@@ -41,7 +41,7 @@ class FrontEnd(object):
 
         self.window.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
-        self.window.iconbitmap(self, default = "C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\logo.ico")
+        self.window.iconbitmap(self, default = "img\\logo.ico")
         self.window.wm_title("Food News - BETA")
 
         self.all_var = BooleanVar(value=0)
@@ -162,7 +162,7 @@ class FrontEnd(object):
         """Buttons to interact with the backend"""
         width = 15
         height = 15
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\view.gif")
+        img = Image.open("img\\view.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.view_img =  ImageTk.PhotoImage(img)
         #Generate all news sources selected
@@ -173,48 +173,47 @@ class FrontEnd(object):
 
         #Send the entered data from enter_data to the backend
 
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\add.gif")
+        img = Image.open("img\\add.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.add_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Add        ", image = self.add_img, compound=LEFT, style='my.TButton'
             , command = self.add_value_to_df).grid(row=1,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\delete.gif")
+        img = Image.open("img\\delete.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.delete_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Delete    ", image = self.delete_img, compound=LEFT, style='my.TButton'
             , command = self.delete_row).grid(row=3,column=6,rowspan=1,columnspan=1,sticky=W)
 
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\update.gif")
+        img = Image.open("img\\update.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.update_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Update  ", image = self.update_img, compound=LEFT, style='my.TButton'
             , command = self.update_row).grid(row=2,column=6,rowspan=1,columnspan=1,sticky=W)
 
         #Clear window and dataframe
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\reset.gif")
+        img = Image.open("img\\reset.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.reset_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Reset     ", image = self.reset_img, compound=LEFT, style='my.TButton'
             , command = self.reset).grid(row=0,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #Export to CSV
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\csv.gif")
+        img = Image.open("img\\csv.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.csv_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   CSV       ", image = self.csv_img, compound=LEFT, style='my.TButton'
             , command = self.generate_csv).grid(row=1,column=7,rowspan=1,columnspan=1,sticky=W)
 
         #SQL Export
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\sql.gif")
+        img = Image.open("img\\sql.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.sql_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   SQL       ", image = self.sql_img, compound=LEFT, style='my.TButton'
             , command = self.generate_SQL).grid(row=2,column=7,rowspan=1,columnspan=1,sticky=W)
 
-
         #Email
-        img = Image.open("C:\\Users\\seang\\Desktop\\FoodNewsApp\\img\\emailim.gif")
+        img = Image.open("img\\emailim.gif")
         img = img.resize((width,height), Image.ANTIALIAS)
         self.email_img =  ImageTk.PhotoImage(img)
         ttk.Button(self.window, width = 12, text = "   Email     ", image = self.email_img, compound=LEFT, style='my.TButton'
@@ -804,7 +803,6 @@ class FrontEnd(object):
             self.window.after(20, self.check_submit_thread)
         else:
             self.progress.stop()
-
 
 if __name__ == "__main__":
     app = FrontEnd()
