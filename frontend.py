@@ -47,9 +47,9 @@ class FrontEnd(object):
         self.all_var = BooleanVar(value=0)
         self.df = pd.DataFrame(columns=["Category","Description","Link","Date","Source"])
 
-        self.from_email = ""
-        self.to_email = ""
-        self.from_pw = ""
+        self.from_email = "dashboardupdates@safefood360.com"
+        self.to_email = "support@safefood360.com"
+        self.from_pw = "Yuj12052"
 
         self.buttons()
 
@@ -62,10 +62,34 @@ class FrontEnd(object):
     def buttons(self):
         """Display Buttons & Output Window"""
         #List of checkbutton text
-        self.source_list = ["EC RASFF","IFSQN","FDA","FSAI","UK FSA","USDA","IFS","FSSC","SF360","FSANZ","EFSA","CFIA","GFSI","FDA FSMA","WHO","NZ FSA","USDA FSIS","BRC","SQF","UN FAO"]
+        self.source_list = ["EC RASFF","IFSQN","FDA","FSAI","UK FSA","USDA","IFS","FSSC","SF360","FSANZ","EFSA","CFIA","GFSI","FDA FSMA","WHO","NZ FSA","USDA FSIS","BRC","SQF","UN FAO","Trello"]
         # #The variable for each text button which will be used later in the script to determine which method to call e.g. if self.source_var[i].get() == True: do something
         self.source_var = []
+        #Dictionary for urls of each source
+        self.source_url = {"EC RASFF":"https://webgate.ec.europa.eu/rasff-window/portal/index.cfm?event=notificationsList"
+            ,"IFSQN":"https://www.ifsqn.com/forum/index.php/rss/forums/4-food-safety-quality-discussion/"
+            ,"FDA":"https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts#Link_to_Food"
+            ,"FSAI":"https://www.fsai.ie/news_centre/food_alerts.html"
+            ,"UK FSA":"https://www.food.gov.uk/news-alerts/search/alerts"
+            ,"USDA":"https://www.usda.gov/media/press-releases"
+            ,"IFS":"https://www.ifs-certification.com/index.php/en/"
+            ,"FSSC":"https://www.fssc22000.com/?lang=en"
+            ,"SF360":"https://safefood360.com/blog/"
+            ,"FSANZ":"https://www.foodstandards.gov.au/industry/foodrecalls/recalls/Pages/default.aspx"
+            ,"EFSA":"http://www.efsa.europa.eu/en/news"
+            ,"CFIA":"https://www.inspection.gc.ca/about-cfia/newsroom/food-recall-warnings/eng/1299076382077/1299076493846"
+            ,"GFSI":"https://mygfsi.com/news-and-resources/?type=news_updates"
+            ,"FDA FSMA":"https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts#Link_to_Food"
+            ,"WHO":"https://www.who.int/health-topics/food-safety/"
+            ,"NZ FSA":"https://www.mpi.govt.nz/food-safety/food-safety-for-consumers/recalled-food-products/"
+            ,"USDA FSIS":"https://www.fsis.usda.gov/wps/portal/fsis/topics/recalls-and-public-health-alerts/current-recalls-and-alerts"
+            ,"BRC":"http://brc.org.uk/news"
+            ,"SQF":"https://www.sqfi.com/sqfi-news/"
+            ,"UN FAO":"http://www.fao.org/news/archive/news-by-date/2019/en/"
+            ,"Trello":"https://trello.com/b/aoFO1UEf/food-fraud-risk-information"
+            }
 
+        self.check_but_list = []
         ttk.Checkbutton(self.window, text = "All", var = self.all_var, command = self.all_select,style = "Red.TCheckbutton").grid(row=0,column=0,sticky=W)
 
         j = 0
@@ -75,9 +99,10 @@ class FrontEnd(object):
         for i in range(len(self.source_list)):
             self.var = BooleanVar(value=0)
             self.source_var.append(self.var) #add var to list
-            check_but = ttk.Checkbutton(self.window, text = self.source_list[i], var = self.source_var[i],style = "Red.TCheckbutton")
-            check_but.grid(row=k,column=j,pady=2,columnspan=1,sticky=W)
-            #check_but.configure(font=("Arial", 9,"bold"))
+            self.check_but = ttk.Checkbutton(self.window, text = self.source_list[i], var = self.source_var[i],style = "Red.TCheckbutton")
+            self.check_but.bind("<Button-3>", partial(self.hyperlink,self.source_list[i]))
+            self.check_but.grid(row=k,column=j,pady=2,columnspan=1,sticky=W)
+
             k += 1
             #new column
             if k == 4:
@@ -120,7 +145,7 @@ class FrontEnd(object):
         self.category_text = StringVar(self.window)
         self.category_text.set(self.option_list[0]) # default value
 
-        self.w = ttk.OptionMenu(self.window, self.category_text, *self.option_list).grid(row=6,column=1,rowspan=1,columnspan=2,sticky=W)
+        self.w = ttk.OptionMenu(self.window, self.category_text, self.option_list[0],*self.option_list).grid(row=6,column=1,rowspan=1,columnspan=2,sticky=W)
 
         #Date
         self.date_text = ttk.Label(self.window, width = 8, text = "Date:")
@@ -139,7 +164,7 @@ class FrontEnd(object):
 
         self.source_variable.set(self.source_list[0]) # default value
 
-        ttk.OptionMenu(self.window, self.source_variable, *self.source_list).grid(row=6,column=5,rowspan=1,sticky=W)
+        ttk.OptionMenu(self.window, self.source_variable, self.source_list[0], *self.source_list).grid(row=6,column=5,rowspan=1,sticky=W)
 
         #Description
         self.desc_text = ttk.Label(self.window, width = 15, text = "Description:")
@@ -229,6 +254,9 @@ class FrontEnd(object):
         self.tree.column("#4", width=75)
         self.tree.column("#5", width=75)
         self.tree.bind("<<TreeviewSelect>>", self.populate_selection)
+
+    def hyperlink(self,event,source_text):
+        webbrowser.open_new(self.source_url.get(event))
 
     def view_thread(self):
 
@@ -355,7 +383,6 @@ class FrontEnd(object):
         space_label.pack()
         self.close_button = ttk.Button(self.win, text = "Ok", command = self.close_pop_up, width = 12, style='my.TButton')
         self.close_button.pack()
-
 
     def close_pop_up(self):
 
@@ -667,7 +694,6 @@ class FrontEnd(object):
     def reset(self):
         self.df = pd.DataFrame(columns=["Category","Description","Link","Date","Source"])
         self.tree.delete(*self.tree.get_children())
-        #self.buttons()
 
     def select_all(self, all_check):
         for a in all_check:
@@ -765,7 +791,7 @@ class FrontEnd(object):
                 source = str(row[5])
 
             if i == 1:
-                begin_comma = "INSERT INTO UPDATETABLE VALUES \n"
+                begin_comma = "INSERT INTO (Id, CategoryId, Description, URL, Date, SourceId) VALUES \n"
             else:
                 begin_comma = ","
 
