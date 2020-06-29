@@ -811,7 +811,7 @@ class FrontEnd(object):
             filetypes=(("CSV file", "*.csv"),("Text file", "*.txt"))
             defaultextension="*.csv"
 
-        file = filedialog.asksaveasfile(filetypes=filetypes,defaultextension=defaultextension)
+        file = filedialog.asksaveasfile(initialfile = "FoodNews",filetypes=filetypes,defaultextension=defaultextension)
         if file:
             if file_type == "SQL":
                 for item in file_to_save:
